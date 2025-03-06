@@ -11,10 +11,12 @@ if __name__ == '__main__':
     t1 = time.time()
     print('test')
     Theta_array = np.linspace(0, 2*np.pi, 100)
-    AB = 0.3
-    alpha_ellipse = 1
-    alpha_Doppler = 1
-    F_thermal = F_thermal(Theta_array, AB)
+    AB = 0.0624
+    alpha_ellipse = 3.1128
+    alpha_Doppler = 2.3808
+    F = 0.0124
+    Tss = 3467.6144
+    F_thermal = F_thermal(Theta_array, AB, F, Tss)
     F_specular = F_specular(Theta_array, AB)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
