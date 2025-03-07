@@ -1,8 +1,10 @@
 import numpy as np
 from scipy.integrate import dblquad, quad, tplquad
 from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from core.parameters import PPs
+import os
 
 # Constants List
 Rs = PPs.Rs
@@ -25,7 +27,6 @@ def Toy_model(zenith, AB, F=0, Tss = Tss_ref):
     branch_false = ((F / 2 + (1 - 2 * F) * np.cos(zenith)))**(1/4) * Tss
     return np.where(condition, branch_true, branch_false)
     
-import numpy as np
 
 def B(lam, T):
     # 定义物理常数
@@ -42,6 +43,20 @@ def B(lam, T):
     
     # 根据条件选择返回值
     return np.where(condition, 0, blackbody_result)
+
+def Response(lam):
+    # 如果环境变量中存在 FOLDER_PATH，则使用环境变量中的路径
+    try:
+        folder_path = os.environ['FOLDER_PATH']
+    except KeyError:
+        print('Not using response function of any telescope.')
+        return 1
+    
+    # 读取文件
+    Response_data = np.loadtxt(os.path.join(folder_path, 'Response.txt'), delimiter=',')
+    # 插值
+    spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
+    return spl(lam *1e6)
     
 def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
     I_angle = np.where(I_angle == -1, (np.pi - Theta) / 2, I_angle)
@@ -57,7 +72,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
     # print('1')
     results = []
-    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts), lam1, lam2)[0] )
+    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2)[0] )
     for i, Theta in enumerate(Theta_array):
         # print(Theta)
         # if Theta > np.pi + 0.01:  # 关于np.pi对称 
@@ -76,12 +91,12 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
         def int_func(lam, theta, phi):
             zenith = np.arccos(np.cos(theta)*np.cos(phi))
             zenith_obs = np.arccos(np.cos(theta + Theta -np.pi)*np.cos(phi))
-            return B(lam, Toy_model(zenith, AB, F, Tss)) * np.cos(phi)**2 * np.cos(np.pi - Theta - theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs))
+            return B(lam, Toy_model(zenith, AB, F, Tss)) * np.cos(phi)**2 * np.cos(np.pi - Theta - theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs)) * Response(lam)
 
         # 定义采样点
         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
         theta_list = np.linspace(np.pi/2 - Theta, 3*np.pi/2 - Theta, 180)
-        lam_list = np.linspace(lam1, lam2, 6)
+        lam_list = np.linspace(lam1, lam2, 20)
 
         # 构造广播数组
         theta_array = theta_list[:, np.newaxis, np.newaxis]  # 形状 (180, 1, 1)

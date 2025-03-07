@@ -12,12 +12,12 @@ if __name__ == '__main__':
     t1 = time.time()
     print('test')
     Theta_array = np.linspace(0, 2*np.pi, 100)
-    AB = 0.0624
-    alpha_ellipse = 3.1128
-    alpha_Doppler = 2.3808
-    F = 0.0124
-    Tss = PPs.Tss
-    Rp2Rs = PPs.Rp2Rs
+    AB = 0.1274
+    alpha_ellipse = 3.2351
+    alpha_Doppler = 2.52
+    F = 0.0234
+    Tss = 3552
+    Rp2Rs = 0.0132
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     

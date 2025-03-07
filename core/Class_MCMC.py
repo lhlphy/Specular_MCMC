@@ -32,6 +32,8 @@ class MCMC:
         self.labels = ["A", "alpha_ellip", "alpha_Doppler", "F", "delta", "Tss", "Rp/Rs"]
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
+        folder = os.path.join('Target', target_name)
+        os.environ['FOLDER_PATH'] = folder
         path = os.path.join('Target', target_name, f'{file_name}.txt')
         data = np.loadtxt(path, delimiter=',')
         self.data_X = data[:, 0] * 2 * np.pi
