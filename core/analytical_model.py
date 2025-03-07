@@ -71,63 +71,86 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
     Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
     return (Rs+Rp)/2
     
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
-    # print('1')
-    results = []
-    # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
-    lam_array = np.linspace(lam1, lam2, 100)
-    int_result = np.sum(B(lam_array, Ts) * Response(lam_array)) * (lam_array[1] - lam_array[0])
+import numpy as np
     
-    Cor = Rp2Rs**2 / (np.pi *  int_result)
-    for i, Theta in enumerate(Theta_array):
-        # print(Theta)
-        # if Theta > np.pi + 0.01:  # 关于np.pi对称 
-        #     results.append(results[len(Theta_array) - i - 1])
-        #     continue
-            
-        if Theta < alpha or Theta > 2*np.pi - alpha: # transit
-            results.append(-Rp2Rs**2)
-            # print((Rp/Rs)**2)
-            continue
-        elif np.abs(Theta - np.pi) < alpha: # eclipse
+def F_thermal_compressed(Theta_array, AB, F=0, Tss=Tss_ref, Rp2Rs=0):
+    # 定义采样点
+    phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)  # phi 网格
+    theta_list = np.linspace(-np.pi, np.pi, 360)        # theta 网格，覆盖所有可能的范围
+    lam_list = np.linspace(lam1, lam2, 20)              # lambda 网格
 
-            results.append(0)
-            continue
+    # 计算步长
+    dphi = phi_list[1] - phi_list[0]
+    dtheta = theta_list[1] - theta_list[0]
+    dlam = lam_list[1] - lam_list[0]
 
-        def int_func(lam, theta, phi):
-            cos_phi = np.cos(phi)
-            cos_zenith = np.cos(theta)* cos_phi
-            zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
-            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs)) * Response(lam)
+    # 构造广播数组，增加 Theta 维度
+    Theta_array_bc = Theta_array[:, np.newaxis, np.newaxis, np.newaxis]  # 形状 (N_Theta, 1, 1, 1)
+    theta_array = theta_list[np.newaxis, :, np.newaxis, np.newaxis]      # 形状 (1, 360, 1, 1)
+    phi_array = phi_list[np.newaxis, np.newaxis, :, np.newaxis]          # 形状 (1, 1, 180, 1)
+    lam_array = lam_list[np.newaxis, np.newaxis, np.newaxis, :]          # 形状 (1, 1, 1, 20)
 
-        # 定义采样点
-        phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
-        theta_list = np.linspace(np.pi/2 - Theta, 3*np.pi/2 - Theta, 180)
-        lam_list = np.linspace(lam1, lam2, 20)
+    # 计算 cos_zenith 和 zenith_obs
+    cos_phi = np.cos(phi_array)
+    cos_zenith = np.cos(theta_array) * cos_phi
+    zenith_obs = np.arccos(-np.cos(theta_array + Theta_array_bc) * cos_phi)
 
-        # 构造广播数组
-        theta_array = theta_list[:, np.newaxis, np.newaxis]  # 形状 (180, 1, 1)
-        phi_array = phi_list[np.newaxis, :, np.newaxis]      # 形状 (1, 180, 1)
-        lam_array = lam_list[np.newaxis, np.newaxis, :]      # 形状 (1, 1, 10)
+    # 计算被积函数的各个分量
+    T = Toy_model(cos_zenith, AB, F, Tss)  # 温度模型
+    B_lam_T = B(lam_array, T)              # 黑体辐射
+    A_fresnel = A_Fresnel(A_normal=AB, I_angle=zenith_obs)  # 菲涅耳反射率
+    response = Response(lam_array)         # 响应函数
 
-        # # 矢量化计算 I_matrix
-        I_matrix = int_func(lam_array, theta_array, phi_array)
+    # 计算被积函数
+    integrand = -B_lam_T * cos_phi**2 * np.cos(Theta_array_bc + theta_array) * (1 - A_fresnel) * response
 
-        # 计算结果
-        result = np.sum(I_matrix) * (phi_list[1] - phi_list[0]) * (theta_list[1] - theta_list[0]) * (lam_list[1] - lam_list[0])
-        # result, _ = tplquad(
-        #     int_func,
-        #     -np.pi / 2, np.pi / 2,  # phi limits
-        #     lambda phi: np.pi/2 - Theta ,
-        #     lambda phi: 3* np.pi/2 - Theta ,  # theta limits -> 3* np.pi/2 - Theta ||if F=0 use np.pi/2
-        #     lambda phi, theta: lam1,
-        #     lambda phi, theta: lam2,  # lam limits
-        #     epsabs=1e-3,       # Increase absolute tolerance
-        #     epsrel=1e-3       # Increase relative tolerance
-        # )
-        results.append(result)
+    # 创建掩码，限制 theta 的积分范围
+    theta_min = np.pi / 2 - Theta_array_bc
+    theta_max = 3 * np.pi / 2 - Theta_array_bc
+    mask = (theta_array >= theta_min) & (theta_array <= theta_max)
 
-    results = np.array(results) * Cor *1e6
+    # 应用掩码并积分
+    integrand_masked = integrand * mask
+    results = np.sum(integrand_masked, axis=(1, 2, 3)) * dtheta * dphi * dlam
+
+    # 处理 transit 和 eclipse 情况
+    transit_mask = (Theta_array < alpha) | (Theta_array > 2 * np.pi - alpha)
+    eclipse_mask = np.abs(Theta_array - np.pi) < alpha
+    results[transit_mask] = -Rp2Rs**2
+    results[eclipse_mask] = 0
+
+    # 计算归一化常数 Cor
+    lam_array_norm = np.linspace(lam1, lam2, 100)
+    int_result = np.sum(B(lam_array_norm, Ts) * Response(lam_array_norm)) * (lam_array_norm[1] - lam_array_norm[0])
+    Cor = Rp2Rs**2 / (np.pi * int_result)
+
+    # 应用归一化并转换为 ppm 单位
+    results = results * Cor * 1e6
+
+    return results
+
+def F_thermal(Theta_array, AB, F=0, Tss=Tss_ref, Rp2Rs=0):
+    '''
+    该函数是对 F_thermal_compressed 的优化封装
+    通过掩码的方式，将 transit 和 eclipse 的情况剔除，减少计算量
+    F_thermal_compressed 可直接用于替代 F_thermal, 但计算效率较低(低大约20%, 具体为 4 alpha / 2pi)
+    '''
+    #1. 识别 transit 和 eclipse 的索引, 使用布尔掩码来找出 Theta_array 中属于 transit 和 eclipse 的部分
+    transit_mask = (Theta_array < alpha) | (Theta_array > 2 * np.pi - alpha)
+    eclipse_mask = np.abs(Theta_array - np.pi) < alpha
+    compute_mask = ~(transit_mask | eclipse_mask)  # 需要计算的 Theta
+    
+    #2. 压缩 Theta_array, 利用 compute_mask 提取需要计算的 Theta 值，生成一个压缩后的数组
+    Theta_array_compressed = Theta_array[compute_mask]
+    
+    #3. 对压缩后的数组进行矢量化计算
+    results_compressed = F_thermal_compressed(Theta_array_compressed, AB, F, Tss, Rp2Rs)
+    
+    #4. 创建并填充最终结果数组
+    results = np.zeros_like(Theta_array)
+    results[compute_mask] = results_compressed  # 填入计算结果
+    results[transit_mask] = -Rp2Rs**2  *1e6     # 填入 transit 的结果
+    results[eclipse_mask] = 0                  # 填入 eclipse 的结果
     return results
 
 def F_specular(Theta_array, AB, Rp2Rs = 0):
