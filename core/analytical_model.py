@@ -20,11 +20,11 @@ lam1 = 0.43e-6
 lam2 = 0.89e-6
 Tss_ref = PPs.Tss
 
-def Toy_model(zenith, AB, F=0, Tss = Tss_ref):
+def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
     # Surface temperature model: Toy Model
-    condition = zenith > np.pi / 2
+    condition = cos_zenith < 0
     branch_true = (F / 2)**(1/4)  * Tss
-    branch_false = ((F / 2 + (1 - 2 * F) * np.cos(zenith)))**(1/4) * Tss
+    branch_false = (F / 2 + (1 - 2 * F) * cos_zenith)**(1/4) * Tss
     return np.where(condition, branch_true, branch_false)
     
 
@@ -74,7 +74,11 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
     # print('1')
     results = []
-    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0] )
+    # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
+    lam_array = np.linspace(lam1, lam2, 100)
+    int_result = np.sum(B(lam_array, Ts) * Response(lam_array)) * (lam_array[1] - lam_array[0])
+    
+    Cor = Rp2Rs**2 / (np.pi *  int_result)
     for i, Theta in enumerate(Theta_array):
         # print(Theta)
         # if Theta > np.pi + 0.01:  # 关于np.pi对称 
@@ -91,9 +95,10 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
             continue
 
         def int_func(lam, theta, phi):
-            zenith = np.arccos(np.cos(theta)*np.cos(phi))
-            zenith_obs = np.arccos(np.cos(theta + Theta -np.pi)*np.cos(phi))
-            return B(lam, Toy_model(zenith, AB, F, Tss)) * np.cos(phi)**2 * np.cos(np.pi - Theta - theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs)) * Response(lam)
+            cos_phi = np.cos(phi)
+            cos_zenith = np.cos(theta)* cos_phi
+            zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
+            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs)) * Response(lam)
 
         # 定义采样点
         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)

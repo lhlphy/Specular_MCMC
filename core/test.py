@@ -7,9 +7,15 @@ from core.analytical_model import *
 import time
 from core.parameters import PPs
 from core.Class_MCMC import MCMC
+import cProfile
+import pstats
+import io
 
 # test
 if __name__ == '__main__':
+    pr = cProfile.Profile()
+    pr.enable()
+    
     t1 = time.time()
     print('test')
     # import MCMC class
@@ -32,6 +38,13 @@ if __name__ == '__main__':
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
     print(f'time1: {time.time() - t1}')
     
+    pr.disable()
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+    
     # subplot, plot each function as a subplot, so 4 subplots in total
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
     axs[0, 0].plot(Theta_array, F_thermal)
@@ -50,4 +63,5 @@ if __name__ == '__main__':
     plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler, F, 0, Tss, Rp2Rs))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.show()
+    
     
