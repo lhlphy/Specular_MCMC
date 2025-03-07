@@ -59,7 +59,9 @@ def Response(lam):
     return spl(lam *1e6)
     
 def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
-    I_angle = np.where(I_angle == -1, (np.pi - Theta) / 2, I_angle)
+    I_angle = np.where(I_angle == -1, np.abs((np.pi - Theta) / 2) + alpha/2, I_angle)
+    # 将I_angle中大于pi/2的值转换为pi/2
+    I_angle = np.where(I_angle > np.pi / 2, np.pi / 2, I_angle)
     SINI = np.sin(I_angle)
     COSI = np.cos(I_angle)  
     n = 2/(1- np.sqrt(A_normal)) -1
@@ -72,7 +74,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
     # print('1')
     results = []
-    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2)[0] )
+    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0] )
     for i, Theta in enumerate(Theta_array):
         # print(Theta)
         # if Theta > np.pi + 0.01:  # 关于np.pi对称 

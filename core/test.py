@@ -6,11 +6,15 @@ import matplotlib.pyplot as plt
 from core.analytical_model import *
 import time
 from core.parameters import PPs
+from core.Class_MCMC import MCMC
 
 # test
 if __name__ == '__main__':
     t1 = time.time()
     print('test')
+    # import MCMC class
+    mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
+    # set parameters
     Theta_array = np.linspace(0, 2*np.pi, 100)
     AB = 0.1274
     alpha_ellipse = 3.2351
@@ -21,6 +25,7 @@ if __name__ == '__main__':
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     
+    # plot each function
     F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs)
     F_specular = F_specular(Theta_array, AB, Rp2Rs)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
@@ -40,6 +45,7 @@ if __name__ == '__main__':
     axs[1, 1].set_title("F_ellip")
     plt.show()
     
+    # test Fp2Fs() function
     plt.subplots()
     plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler, F, 0, Tss, Rp2Rs))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
