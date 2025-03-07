@@ -24,10 +24,12 @@ class Planet_parameters:
         self.Ms_S = row_data['st_mass'] # mass of the star/Solar mass
         self.Rs_S = row_data['st_rad'] # radius of the star/Solar radius
         self.Tss = self.Stellar_T / np.sqrt(self.semi_axis / self.Rs)
+        self.Rp2Rs = self.Rp / self.Rs
         print("alpha: ", self.Rs / self.semi_axis)
 
 
 # PPs = Planet_parameters(4170) # K2-141 b
 # PPs = Planet_parameters(733 - 98) # GJ 367b
 PPs = Planet_parameters(6427 - 98) # Kepler-10 b
+# PPs = Planet_parameters(6432 - 98) # Kepler-10 b
     

@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from core.analytical_model import *
 import time
+from core.parameters import PPs
 
 # test
 if __name__ == '__main__':
@@ -15,9 +16,13 @@ if __name__ == '__main__':
     alpha_ellipse = 3.1128
     alpha_Doppler = 2.3808
     F = 0.0124
-    Tss = 3467.6144
-    F_thermal = F_thermal(Theta_array, AB, F, Tss)
-    F_specular = F_specular(Theta_array, AB)
+    Tss = PPs.Tss
+    Rp2Rs = PPs.Rp2Rs
+    print("Tss standard is: ", Tss)
+    print("Rp/Rs standard is: ", Rp2Rs)
+    
+    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs)
+    F_specular = F_specular(Theta_array, AB, Rp2Rs)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
     print(f'time1: {time.time() - t1}')
@@ -36,7 +41,7 @@ if __name__ == '__main__':
     plt.show()
     
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler, F, 0, Tss, Rp2Rs))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.show()
     

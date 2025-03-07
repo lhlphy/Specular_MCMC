@@ -6,7 +6,6 @@ from core.parameters import PPs
 
 # Constants List
 Rs = PPs.Rs
-Rp = PPs.Rp
 e = PPs.eccentricity
 a = PPs.semi_axis
 Ts = PPs.Stellar_T
@@ -55,10 +54,10 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1):
     Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
     return (Rs+Rp)/2
     
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref):
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
     # print('1')
     results = []
-    Cor = Rp**2 / (np.pi * Rs**2 * quad(lambda lam: B(lam, Ts), lam1, lam2)[0] )
+    Cor = Rp2Rs**2 / (np.pi * quad(lambda lam: B(lam, Ts), lam1, lam2)[0] )
     for i, Theta in enumerate(Theta_array):
         # print(Theta)
         # if Theta > np.pi + 0.01:  # 关于np.pi对称 
@@ -66,7 +65,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref):
         #     continue
             
         if Theta < alpha or Theta > 2*np.pi - alpha: # transit
-            results.append(-(Rp/Rs)**2)
+            results.append(-Rp2Rs**2)
             # print((Rp/Rs)**2)
             continue
         elif np.abs(Theta - np.pi) < alpha: # eclipse
@@ -109,8 +108,8 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref):
     results = np.array(results) * Cor *1e6
     return results
 
-def F_specular(Theta_array, AB):
-    SI = A_Fresnel(Theta_array, AB)*(Rp/Rs)**2 * alpha**2 /4 * (1-alpha**2 /24 *(2-np.cos(Theta_array))/ np.sin(Theta_array/2)**2)
+def F_specular(Theta_array, AB, Rp2Rs = 0):
+    SI = A_Fresnel(Theta_array, AB)* Rp2Rs**2 * alpha**2 /4 * (1-alpha**2 /24 *(2-np.cos(Theta_array))/ np.sin(Theta_array/2)**2)
     SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
     return SI *1e6
     
@@ -122,5 +121,5 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, alpha_ellip, alpha_Doppler, F=0, delta =0, Tss = Tss_ref):
-    return F_thermal(Theta_array, AB, F, Tss) + F_specular(Theta_array, AB) + F_ellip(Theta_array, alpha_ellip) + F_Doppler(Theta_array, alpha_Doppler) + delta
+def Fp2Fs(Theta_array, AB, alpha_ellip, alpha_Doppler, F=0, delta =0, Tss = Tss_ref, Rp2Rs = 0):
+    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs) + F_specular(Theta_array, AB, Rp2Rs) + F_ellip(Theta_array, alpha_ellip) + F_Doppler(Theta_array, alpha_Doppler) + delta
