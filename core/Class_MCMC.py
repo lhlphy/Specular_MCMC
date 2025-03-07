@@ -151,8 +151,8 @@ class MCMC:
         plt.figure(figsize=(10, 6))
         for ind in inds:
             sample = samples[ind]
-            AB, alpha_ellip, alpha_Doppler, F, delta, Tss = sample
-            model_pred = Fp2Fs(self.data_X, AB, alpha_ellip, alpha_Doppler, F, delta, Tss)
+            AB, alpha_ellip, alpha_Doppler, F, delta, Tss, Rp2Rs = sample
+            model_pred = Fp2Fs(self.data_X, AB, alpha_ellip, alpha_Doppler, F, delta, Tss, Rp2Rs)
             plt.plot(self.data_X / (2 * np.pi), model_pred, "C1", alpha=0.1)
         plt.errorbar(self.data_X / (2 * np.pi), self.data_Y, yerr=self.sigma, fmt=".k", capsize=0, label="Data")
         plt.xlabel("Phase (normalized)")
