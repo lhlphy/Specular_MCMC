@@ -28,12 +28,13 @@ if __name__ == '__main__':
     F = 0.0234
     Tss = 3552
     Rp2Rs = 0.0132
+    offset = 0.2
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     
     # plot each function
-    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs)
-    F_specular = F_specular(Theta_array, AB, Rp2Rs)
+    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset)
+    F_specular = F_specular(Theta_array, AB, Rp2Rs, offset)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
     print(f'time1: {time.time() - t1}')
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     
     # test Fp2Fs() function
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler, F, 0, Tss, Rp2Rs))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, alpha_Doppler, F, 0, Tss, Rp2Rs, offset))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.show()
     
