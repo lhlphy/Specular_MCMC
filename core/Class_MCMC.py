@@ -83,7 +83,7 @@ class MCMC:
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.025 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # offset: 均匀分布 [0.2, 1.5]
