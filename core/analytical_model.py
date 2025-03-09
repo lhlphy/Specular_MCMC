@@ -21,6 +21,7 @@ lam2 = 0.89e-6
 Tss_ref = PPs.Tss
 
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
+    F = 0
     # Surface temperature model: Toy Model
     condition = cos_zenith < 0
     branch_true = (F / 2)**(1/4)  * Tss
@@ -74,6 +75,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 2):
     return (Rs+Rp)/2
     
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
+    F = 0
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -145,5 +147,5 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, alpha_ellip, alpha_Doppler, F=0, delta =0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
+def Fp2Fs(Theta_array, AB, alpha_ellip, delta =0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
     return F_thermal(Theta_array, AB, 0, Tss, Rp2Rs, offset) + F_specular(Theta_array, AB, Rp2Rs, offset) + F_ellip(Theta_array, alpha_ellip) + delta
