@@ -24,8 +24,8 @@ if __name__ == '__main__':
     Theta_array = np.linspace(0, 2*np.pi, 100)
     AB = 0.1274
     alpha_ellipse = 3.2351
-    alpha_Doppler = 2.52
-    F = 0.0234
+    alpha_Doppler = 2.52 *20
+    F = 0.5
     Tss = 3552
     Rp2Rs = 0.0132
     offset = 0.2
