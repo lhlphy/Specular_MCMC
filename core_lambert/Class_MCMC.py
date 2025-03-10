@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import emcee
 import corner
-from analytical_model_Lambert import Fp2Fs
+from core_lambert.analytical_model_Lambert import Fp2Fs
 import arviz as az
 from multiprocessing import Pool
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -201,10 +201,13 @@ class MCMC:
         medians = np.percentile(samples, 50, axis=0)
         lower = np.percentile(samples, 16, axis=0)
         upper = np.percentile(samples, 84, axis=0)
+        # save the results to MCMC
+        self.medians = medians
 
         lower_errors = medians - lower
         upper_errors = upper - medians
 
         for i in range(self.ndim):
             print(f"{self.labels[i]}: {medians[i]:.4f} -{lower_errors[i]:.4f} / +{upper_errors[i]:.4f}")
+        return medians, lower, upper
     
