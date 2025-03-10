@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import emcee
 import corner
-from analytical_model import Fp2Fs
+from analytical_model_Lambert import Fp2Fs
 import arviz as az
 from multiprocessing import Pool
 os.environ["OMP_NUM_THREADS"] = "1"

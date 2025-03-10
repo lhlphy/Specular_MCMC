@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt
-from analytical_model import *
+from analytical_model_Lambert import *
 import time
 from parameters import PPs
 from Class_MCMC import MCMC
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     AB = 0.1
     alpha_ellipse = 3.2351
     alpha_Doppler = 2.52 *20
-    F = 0.5
+    F = 0
     Tss = 3552
     Rp2Rs = 0.0132
     offset = 0.2
@@ -33,8 +33,8 @@ if __name__ == '__main__':
     print("Rp/Rs standard is: ", Rp2Rs)
     
     # plot each function
-    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset)
-    F_specular = F_specular(Theta_array, AB, Rp2Rs, offset)
+    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs)
+    F_specular = F_lambert(Theta_array, AB, Rp2Rs)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
     print(f'time1: {time.time() - t1}')
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     
     # test Fp2Fs() function
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, 0, Tss, Rp2Rs, offset))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, 0, Tss, Rp2Rs))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.show()
     

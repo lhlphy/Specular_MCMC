@@ -21,7 +21,6 @@ lam2 = 0.89e-6
 Tss_ref = PPs.Tss
 
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
-    F = 0
     # Surface temperature model: Toy Model
     condition = cos_zenith < 0
     branch_true = (F / 2)**(1/4)  * Tss
@@ -59,23 +58,7 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 2):
-    if offset ==2:
-        print('Warning(A_Fresnel): offset is 2, exceed boundary.')
-    I_angle = np.where(I_angle == -1, np.abs((np.pi - Theta) / 2) + alpha/3 *offset, I_angle)
-    # 将I_angle中大于pi/2的值转换为pi/2
-    I_angle = np.where(I_angle > np.pi / 2, np.pi / 2, I_angle)
-    SINI = np.sin(I_angle)
-    COSI = np.cos(I_angle)  
-    n = 2/(1- np.sqrt(A_normal)) -1
-    Co1 = np.sqrt(n**2 - SINI**2)
-
-    Rs = ((COSI - Co1) / (COSI + Co1)) **2
-    Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
-    return (Rs+Rp)/2
-    
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
-    F = 0
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -102,7 +85,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
             cos_phi = np.cos(phi)
             cos_zenith = np.cos(theta)* cos_phi
             zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
-            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs, offset=offset)) * Response(lam)
+            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - AB) * Response(lam)
 
         # 定义采样点
         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
@@ -134,10 +117,13 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
     results = np.array(results) * Cor *1e6
     return results
 
-def F_specular(Theta_array, AB, Rp2Rs, offset):
-    SI = A_Fresnel(Theta_array, AB, offset= offset)* Rp2Rs**2 * alpha**2 /4 * (1-alpha**2 /24 *(2-np.cos(Theta_array))/ np.sin(Theta_array/2)**2)
-    SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
-    return SI *1e6
+def F_lambert(Theta_array, AB, Rp2Rs):
+    zt = np.acos(- np.cos(Theta_array))
+    Pt = AB * 2/3*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
+    condition = np.abs(Theta_array - np.pi) < alpha
+    Pt = np.where(condition, 0, Pt)
+    return Rp2Rs**2 *alpha**2 * Pt *1e6
+
     
 def F_ellip(Theta_array, alpha_ellip):
     A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *P**-2
@@ -147,6 +133,5 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, alpha_ellip, delta =0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
-    offset = 0.4 # offset = 0.4
-    return F_thermal(Theta_array, AB, 0, Tss, Rp2Rs, offset) + F_specular(Theta_array, AB, Rp2Rs, offset) + F_ellip(Theta_array, alpha_ellip) + delta
+def Fp2Fs(Theta_array, AB, alpha_ellip, delta =0, Tss = Tss_ref, Rp2Rs = 0):
+    return F_thermal(Theta_array, AB, 0, Tss, Rp2Rs) + F_lambert(Theta_array, AB, Rp2Rs) + F_ellip(Theta_array, alpha_ellip) + delta
