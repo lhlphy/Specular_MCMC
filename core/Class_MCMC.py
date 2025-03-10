@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from core.parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=6, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=5, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["A", "alpha_ellip", "delta", "Tss", "Rp/Rs", "offset"]
+        self.labels = ["A", "alpha_ellip", "delta", "Tss", "Rp/Rs"]
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
         folder = os.path.join('Target', target_name)
@@ -43,15 +43,15 @@ class MCMC:
 
     def log_likelihood(self, params):
         """对数似然函数"""
-        AB, alpha_ellip, delta, Tss, Rp2Rs, offset = params
-        model = Fp2Fs(self.data_X, AB, alpha_ellip, delta, Tss, Rp2Rs, offset)
+        AB, alpha_ellip, delta, Tss, Rp2Rs = params
+        model = Fp2Fs(self.data_X, AB, alpha_ellip, delta, Tss, Rp2Rs)
         return -0.5 * np.sum((self.data_Y - model) ** 2 / self.sigma**2 + np.log(2 * np.pi * self.sigma**2))
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, alpha_ellip, delta, Tss, Rp2Rs, offset = params
+        AB, alpha_ellip, delta, Tss, Rp2Rs = params
         
-        # AB: 均匀分布 [0, 0.5]
+        # AB: 均匀分布 [0, 0.3]
         if not (0 <= AB <= 0.3):
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
@@ -74,13 +74,8 @@ class MCMC:
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
         mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        
-        # offset: 均匀分布 [0.2, 1.5]
-        if not (0.2 <= offset <= 1.5):
-            return -np.inf
-        log_prior_offset = 0.0
 
-        return log_prior_AB + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_offset
+        return log_prior_AB + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs 
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -93,7 +88,7 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB
+        initial[:, 0] = np.random.uniform(0, 0.3, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=4.0, scale=1.5, size = self.nwalkers))  # alpha_elips
         # delta
         mu, sigma = -5.5, 0.5
@@ -102,10 +97,8 @@ class MCMC:
         mu, sigma = PPs.Tss, 200
         initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.025 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
         initial[:, 4] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-        # offset
-        initial[:, 5] = np.random.uniform(0.2, 1.5, self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
@@ -144,8 +137,8 @@ class MCMC:
         plt.figure(figsize=(10, 6))
         for ind in inds:
             sample = samples[ind]
-            AB, alpha_ellip, delta, Tss, Rp2Rs, offset = sample
-            model_pred = Fp2Fs(self.data_X, AB, alpha_ellip, delta, Tss, Rp2Rs, offset)
+            AB, alpha_ellip, delta, Tss, Rp2Rs = sample
+            model_pred = Fp2Fs(self.data_X, AB, alpha_ellip, delta, Tss, Rp2Rs)
             plt.plot(self.data_X / (2 * np.pi), model_pred, "C1", alpha=0.1)
         plt.errorbar(self.data_X / (2 * np.pi), self.data_Y, yerr=self.sigma, fmt=".k", capsize=0, label="Data")
         plt.xlabel("Phase (normalized)")

@@ -148,4 +148,5 @@ def F_Doppler(Theta_array, alpha_Doppler):
     return A_Doppler *np.sin(Theta_array)
 
 def Fp2Fs(Theta_array, AB, alpha_ellip, delta =0, Tss = Tss_ref, Rp2Rs = 0, offset = 1.5):
+    offset = 0.4 # offset = 0.4
     return F_thermal(Theta_array, AB, 0, Tss, Rp2Rs, offset) + F_specular(Theta_array, AB, Rp2Rs, offset) + F_ellip(Theta_array, alpha_ellip) + delta
