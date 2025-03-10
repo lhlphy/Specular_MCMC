@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import warnings
 warnings.filterwarnings("ignore")
 
-from core.Class_MCMC import MCMC
+from Class_MCMC import MCMC
 
 # 示例用法
 if __name__ == '__main__':
