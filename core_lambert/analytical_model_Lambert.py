@@ -112,9 +112,9 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
         #     epsabs=1e-3,       # Increase absolute tolerance
         #     epsrel=1e-3       # Increase relative tolerance
         # )
-        results.append(result)
+        results.append(result* Cor)
 
-    results = np.array(results) * Cor *1e6
+    results = np.array(results) *1e6
     return results
 
 def F_lambert(Theta_array, AB, Rp2Rs):

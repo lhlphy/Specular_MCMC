@@ -69,6 +69,8 @@ class MCMC:
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
         mu, sigma = PPs.Tss, 200
+        if Tss > PPs.Tss *1.25:
+            return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
@@ -95,7 +97,9 @@ class MCMC:
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
         mu, sigma = PPs.Tss, 200
-        initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        a = (0 - mu) / sigma
+        b = (PPs.Tss * 1.25 - mu) / sigma
+        initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
         initial[:, 4] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)

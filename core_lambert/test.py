@@ -50,7 +50,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
     axs[0, 0].plot(Theta_array, F_thermal)
     axs[0, 0].set_title("F_thermal")
-    axs[0, 0].set_ylim([0, max(F_thermal)*1.2])
+    axs[0, 0].set_ylim([min(F_thermal) *1.1, max(F_thermal)*1.2])
     axs[0, 1].plot(Theta_array, F_specular)
     axs[0, 1].set_title("F_specular")
     axs[1, 0].plot(Theta_array, F_Doppler)

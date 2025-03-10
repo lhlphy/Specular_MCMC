@@ -51,8 +51,8 @@ class MCMC:
         """对数先验函数"""
         AB, alpha_ellip, delta, Tss, Rp2Rs = params
         
-        # AB: 均匀分布 [0, 0.3]
-        if not (0 <= AB <= 0.3):
+        # AB: 均匀分布 [0, 0.7]
+        if not (0 <= AB <= 0.7):
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
         
@@ -69,6 +69,8 @@ class MCMC:
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
         mu, sigma = PPs.Tss, 200
+        if Tss > PPs.Tss *1.25:
+            return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
@@ -88,14 +90,16 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.3, self.nwalkers)  # AB
+        initial[:, 0] = np.random.uniform(0, 0.7, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=4.0, scale=1.5, size = self.nwalkers))  # alpha_elips
         # delta
         mu, sigma = -5.5, 0.5
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
         mu, sigma = PPs.Tss, 200
-        initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        a = (0 - mu) / sigma
+        b = (PPs.Tss * 1.25 - mu) / sigma
+        initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
         initial[:, 4] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
