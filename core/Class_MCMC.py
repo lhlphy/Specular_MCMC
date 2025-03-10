@@ -64,7 +64,7 @@ class MCMC:
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
         # delta: 正态分布，mu=-5, sigma=3
-        mu, sigma = -7.0, 0.5
+        mu, sigma = -4.0, 0.7
         log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
@@ -93,7 +93,7 @@ class MCMC:
         initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=4.0, scale=1.5, size = self.nwalkers))  # alpha_elips
         # delta
-        mu, sigma = -7.0, 0.5
+        mu, sigma = -4.0, 0.7
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
         mu, sigma = PPs.Tss, 200
