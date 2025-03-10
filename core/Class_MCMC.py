@@ -52,7 +52,7 @@ class MCMC:
         AB, alpha_ellip, delta, Tss, Rp2Rs = params
         
         # AB: 均匀分布 [0, 0.3]
-        if not (0 <= AB <= 0.3):
+        if not (0 <= AB <= 0.5):
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
         
@@ -64,7 +64,7 @@ class MCMC:
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
         # delta: 正态分布，mu=-5, sigma=3
-        mu, sigma = -5.5, 0.5
+        mu, sigma = -7.0, 0.5
         log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
@@ -90,10 +90,10 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.3, self.nwalkers)  # AB
+        initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=4.0, scale=1.5, size = self.nwalkers))  # alpha_elips
         # delta
-        mu, sigma = -5.5, 0.5
+        mu, sigma = -7.0, 0.5
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
         mu, sigma = PPs.Tss, 200
