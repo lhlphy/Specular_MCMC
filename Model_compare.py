@@ -10,11 +10,15 @@ import core_lambert.Class_MCMC
 import core_lambert.analytical_model_Lambert
 import core
 import core_lambert
+import warnings
+warnings.filterwarnings("ignore")
 
 # load the parameters from the MCMC class
 mcmc = core.Class_MCMC.MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=5, nwalkers=64, nsteps=3000, burnin=1500)
 mcmc_lambert = core_lambert.Class_MCMC.MCMC('Kepler-10b_lambert', 'Kepler', sigma=2.5, ndim=5, nwalkers=64, nsteps=3000, burnin=1500)
-params, lower, upper = mcmc.estimate_parameters()
+print("\nThe parameters of the Specular model: ")
+params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
+print("\nThe parameters of the Lambert model: ")
 params_l, lower_l, upper_l = mcmc_lambert.estimate_parameters()
 
 # load Kepler data
@@ -27,13 +31,13 @@ data_model_l = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, *params_l)
 
 # calculate the chi2 value
 def chi2(dataY, data_Model, errorbar):
-    return np.sum(((dataY - data_Model) / errorbar)**2)
+    return np.sum(((dataY - data_Model) / errorbar)**2) / len(dataY)
 
 chi2_value = chi2(dataY, data_model, mcmc.sigma)
 chi2_value_lambert = chi2(dataY, data_model_l, mcmc_lambert.sigma)
 
 # print the chi2 results
-print("chi2 for Specular model is ", chi2_value)
+print("\nchi2 for Specular model is ", chi2_value)
 print("chi2 for Lambert  model is ", chi2_value_lambert)
 if chi2_value < chi2_value_lambert:
     print("Specular model is better than Lambert model")
@@ -48,7 +52,7 @@ data_model_l_upper = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, *upper_l
 
 # plot the data and model
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.errorbar(dataX, dataY, yerr=mcmc.sigma, fmt='o', color='k', label='Data')
+ax.errorbar(dataX, dataY, yerr=mcmc.sigma, fmt='o', color='k', label='Data',markersize=3)
 # 绘制Specular和Lambert模型的拟合曲线
 ax.plot(dataX, data_model, '-', color='red', linewidth=2, label='Specular Model')
 ax.plot(dataX, data_model_l, '-', color='blue', linewidth=2, label='Lambert Model')
