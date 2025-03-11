@@ -1,0 +1,9 @@
+When change the observation target, do the following checklist:
+1. (parameters.py -- Line30) Change the index of target
+2. (Class_MCMC.py) Change the prior distribution (focus on AB, delta)
+3. (Class_MCMC.py) Change the initial position of walkers
+4. (main.py -- Line) Change the name of target and file (file name is just the name of telescope)
+	for ./core/, "Kepler-10b"
+	for ./core_lambert/, "Kepler-10b_lambert"
+5. (main.py -- Line) Change the sigma (errorbar)
+6. Remember to do (2,3,4,5) steps for both ./core/ and ./core_lambert/ folders
