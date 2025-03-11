@@ -148,8 +148,8 @@ class MCMC:
         plt.xlabel("Phase (normalized)")
         plt.ylabel("Flux")
         plt.legend()
-        path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit.png')
-        plt.savefig(path)
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit.pdf')
+        plt.savefig(path, format='pdf')
         plt.close()
     
     def plot_trace(self):
@@ -164,8 +164,8 @@ class MCMC:
             plt.plot(self.chain[:, :, i], "k", alpha=0.3)
             plt.ylabel(self.labels[i])
         plt.xlabel("Step number")
-        path = os.path.join('Target', self.target_name, f'{self.file_name}_trace.png')
-        plt.savefig(path)
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_trace.pdf')
+        plt.savefig(path, format='pdf')
         plt.close()
     
     def plot_corner(self, samples=None):
@@ -174,8 +174,8 @@ class MCMC:
             samples = self.load_samples()
         
         fig = corner.corner(samples, labels=self.labels)
-        path = os.path.join('Target', self.target_name, f'{self.file_name}_corner.png')
-        plt.savefig(path)
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_corner.pdf')
+        plt.savefig(path, format='pdf')
         plt.close()
         
     def compute_rhat(self):
