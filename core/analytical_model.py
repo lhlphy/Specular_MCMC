@@ -20,14 +20,14 @@ lam1 = 0.43e-6
 lam2 = 0.89e-6
 Tss_ref = PPs.Tss
 
-def F_Transit(Theta_array, Rp2Rs, co1, co2):
+def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
     time = Theta_array / (2 * np.pi) * P
     from pytransit import RoadRunnerModel
     tm = RoadRunnerModel('quadratic')
     tm.set_data(time)
     
     a_sc = a / Rs
-    flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i=0.5*np.pi, e=0.0, w=0.0)
+    flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
     return (flux1 - 1) *1e6
     
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
@@ -71,10 +71,12 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0):
+def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0, inc = 90):
     if offset ==2:
         print('Warning(A_Fresnel): offset is 2, exceed boundary.')
-    I_angle = np.where(I_angle == -1, np.abs((np.pi - Theta) / 2) + alpha/3 *offset, I_angle)
+    
+    Ang = np.acos(np.cos(np.abs((np.pi - Theta) / 2) + alpha/3 *offset) * np.sin(inc/180 *np.pi))
+    I_angle = np.where(I_angle == -1, Ang, I_angle)
     # 将I_angle中大于pi/2的值转换为pi/2
     I_angle = np.where(I_angle > np.pi / 2, np.pi / 2, I_angle)
     SINI = np.sin(I_angle)
@@ -86,7 +88,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0):
     Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
     return (Rs+Rp)/2
     
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0):
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0, inc = 90):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -111,7 +113,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0):
 
         def int_func(lam, theta, phi):
             cos_phi = np.cos(phi)
-            cos_zenith = np.cos(theta)* cos_phi
+            cos_zenith = np.cos(theta)* np.cos(phi + np.pi/2 - inc/180 *np.pi)
             zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
             return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs, offset=offset)) * Response(lam)
 
@@ -150,8 +152,8 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0):
 #     SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
 #     return SI *1e6
 
-def F_specular(Theta_array, AB, Rp2Rs, offset = 0):
-    SI = A_Fresnel(Theta_array, A_normal=AB, offset = offset) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
+def F_specular(Theta_array, AB, Rp2Rs, offset = 0, inc = 90):
+    SI = A_Fresnel(Theta_array, A_normal=AB, offset = offset, inc = inc) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
     SI[np.abs(Theta_array - np.pi) < alpha] = 0
     return SI
 
@@ -164,6 +166,8 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, F, alpha_ellip, co1, co2, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs):
+def Fp2Fs(Theta_array, AB, F, alpha_ellip, co1, co2, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 0):
+    if inc == 0:
+        print('Warning: inc is 0, set to 90.')
     offset = 0 # offset = 0.4
-    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset) + F_specular(Theta_array, AB, Rp2Rs, offset) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2)
+    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc) + F_specular(Theta_array, AB, Rp2Rs, offset, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)

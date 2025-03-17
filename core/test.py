@@ -54,22 +54,23 @@ if __name__ == '__main__':
     # set parameters
     Theta_array = np.linspace(0, 2*np.pi, 180)
     offset = 0
-    AB = 0.1
-    alpha_ellipse = 3.2351
+    AB = 0.1238
+    alpha_ellipse = 3.1739
     alpha_Doppler = 0
-    F = 0
-    Tss = PPs.Tss
-    Rp2Rs = PPs.Rp2Rs
+    F = 0.0205
+    Tss = 3703
+    Rp2Rs = 0.0122
+    inc = 80
     Coefficents = PPs.Coefficents
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     
     # plot each function
-    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset)
-    F_specular = F_specular(Theta_array, AB, Rp2Rs, offset)
+    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc)
+    F_specular = F_specular(Theta_array, AB, Rp2Rs, offset, inc)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
-    F_tr = F_Transit(Theta_array, Rp2Rs, *Coefficents)
+    F_tr = F_Transit(Theta_array, Rp2Rs, *Coefficents, inc)
     print(f'time1: {time.time() - t1}')
     
     pr.disable()
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     
     # test Fp2Fs() function
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs, inc))
     plt.plot(Theta_array, F_tr)
     # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.xlim([0, 0.5])
