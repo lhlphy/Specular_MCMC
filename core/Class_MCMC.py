@@ -53,14 +53,14 @@ class MCMC:
         AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc = params
         
         # AB: 均匀分布 [0, 0.3]
-        if not (0 <= AB <= 0.5):
+        if not (0 <= AB <= 0.3):
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
         
         # alpha_ellip: 非负正态分布，mu=5, sigma=5
         if alpha_ellip < 0:
             return -np.inf  # 确保非负
-        mu, sigma = 4.0, 1.5
+        mu, sigma = 3.0, 1.0
         log_prior_alpha_ellip = -0.5 * ((alpha_ellip - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
@@ -75,13 +75,13 @@ class MCMC:
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # F: 非负正态分布，mu=0, sigma=0.05
         if F < 0 or F > 0.5:
             return -np.inf  # 确保非负
-        mu, sigma = 0, 0.05
+        mu, sigma = 0, 0.03
         log_prior_F = -0.5 * ((F - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # inc: inc<90的半正态分布，mu=90, sigma=5
@@ -103,8 +103,8 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB
-        initial[:, 1] = np.abs(np.random.normal(loc=4.0, scale=1.5, size = self.nwalkers))  # alpha_elips
+        initial[:, 0] = np.random.uniform(0, 0.3, self.nwalkers)  # AB
+        initial[:, 1] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
         # delta
         mu, sigma = -5.5, 0.5
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
@@ -114,10 +114,10 @@ class MCMC:
         b = (PPs.Tss * 1.25 - mu) / sigma
         initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.03 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
         initial[:, 4] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # F
-        mu, sigma = 0, 0.05
+        mu, sigma = 0, 0.03
         initial[:, 5] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
         # inc
         mu, sigma = 90, 5

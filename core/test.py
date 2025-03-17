@@ -59,8 +59,8 @@ if __name__ == '__main__':
     alpha_Doppler = 0
     F = 0.0205
     Tss = 3703
-    Rp2Rs = 0.0122
-    inc = 80
+    Rp2Rs = 0.01275
+    inc = 84
     Coefficents = PPs.Coefficents
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     print(f'time1: {time.time() - t1}')
     
     pr.disable()
-    s = io.StringIO()
-    sortby = 'cumulative'
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print(s.getvalue())
+    # s = io.StringIO()
+    # sortby = 'cumulative'
+    # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    # ps.print_stats()
+    # print(s.getvalue())
     
     # subplot, plot each function as a subplot, so 4 subplots in total
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
