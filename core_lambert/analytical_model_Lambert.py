@@ -82,11 +82,11 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0):
         #     results.append(results[len(Theta_array) - i - 1])
         #     continue
             
-        if Theta < alpha or Theta > 2*np.pi - alpha: # transit
-            results.append(-Rp2Rs**2)
-            # print((Rp/Rs)**2)
-            continue
-        elif np.abs(Theta - np.pi) < alpha: # eclipse
+        # if Theta < alpha or Theta > 2*np.pi - alpha: # transit
+        #     results.append(-Rp2Rs**2)
+        #     # print((Rp/Rs)**2)
+        #     continue
+        if np.abs(Theta - np.pi) < alpha: # eclipse
 
             results.append(0)
             continue
