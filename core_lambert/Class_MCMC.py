@@ -69,8 +69,8 @@ class MCMC:
         log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
-        mu, sigma = PPs.Tss, 200
-        if Tss > PPs.Tss *1.25:
+        mu, sigma = PPs.Tss, 100
+        if Tss > PPs.Tss *1.2:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
@@ -109,9 +109,9 @@ class MCMC:
         mu, sigma = -5.5, 0.5
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
-        mu, sigma = PPs.Tss, 200
+        mu, sigma = PPs.Tss, 100
         a = (0 - mu) / sigma
-        b = (PPs.Tss * 1.25 - mu) / sigma
+        b = (PPs.Tss * 1.2 - mu) / sigma
         initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
