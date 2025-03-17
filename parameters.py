@@ -31,6 +31,7 @@ class Planet_parameters:
 
 # PPs = Planet_parameters(4170) # K2-141 b
 # PPs = Planet_parameters(733 - 98) # GJ 367b
-PPs = Planet_parameters(6427 - 98) # Kepler-10 b
+# PPs = Planet_parameters(6427 - 98) # Kepler-10 b
 # PPs = Planet_parameters(6432 - 98) # Kepler-10 b
+PPs = Planet_parameters(30080 - 98) # Kepler-78 b
     
