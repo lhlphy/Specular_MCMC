@@ -31,7 +31,6 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2):
     return (flux1 - 1) *1e6
     
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
-    F = 0
     # Surface temperature model: Toy Model
     condition = cos_zenith < 0
     branch_true = (F / 2)**(1/4)  * Tss
@@ -85,7 +84,6 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0):
     return (Rs+Rp)/2
     
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0):
-    F = 0
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"

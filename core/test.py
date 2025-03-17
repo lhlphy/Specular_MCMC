@@ -56,7 +56,7 @@ if __name__ == '__main__':
     AB = 0.1
     alpha_ellipse = 3.2351
     alpha_Doppler = 2.52 *20
-    F = 0.5
+    F = 0.2
     Tss = 3552
     Rp2Rs = 0.0132
     offset = 0.2
