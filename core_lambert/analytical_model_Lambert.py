@@ -58,12 +58,15 @@ def Response(lam):
     # 如果环境变量中存在 FOLDER_PATH，则使用环境变量中的路径
     try:
         folder_path = os.environ['FOLDER_PATH']
+        # 读取文件
+        Response_data = np.loadtxt(os.path.join(folder_path, 'Response.txt'), delimiter=',')
     except KeyError:
-        print('Not using response function of any telescope.')
-        return 1
-    
-    # 读取文件
-    Response_data = np.loadtxt(os.path.join(folder_path, 'Response.txt'), delimiter=',')
+        try:
+            Response_data = np.loadtxt('Response.txt', delimiter=',')
+        except FileNotFoundError:
+            print('Not using response function of any telescope.')
+            return 1
+
     # 插值
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
