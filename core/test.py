@@ -60,7 +60,7 @@ if __name__ == '__main__':
     F = 0
     Tss = PPs.Tss
     Rp2Rs = PPs.Rp2Rs
-    Coefficents = [0.1, 0.1]
+    Coefficents = PPs.Coefficents
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     F_specular = F_specular(Theta_array, AB, Rp2Rs, offset)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
-    F_tr = F_Transit(Theta_array, Rp2Rs, 0.1, 0.1)
+    F_tr = F_Transit(Theta_array, Rp2Rs, *Coefficents)
     print(f'time1: {time.time() - t1}')
     
     pr.disable()
@@ -94,11 +94,11 @@ if __name__ == '__main__':
     
     # test Fp2Fs() function
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, 0.1, 0.1, 0, Tss, Rp2Rs))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs))
     plt.plot(Theta_array, F_tr)
     # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.xlim([0, 0.5])
-    plt.ylim([-170, -130])
+    plt.ylim([-200, -130])
     plt.show()
     
     

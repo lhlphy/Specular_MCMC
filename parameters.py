@@ -26,6 +26,7 @@ class Planet_parameters:
         self.Tss = self.Stellar_T / np.sqrt(self.semi_axis / self.Rs)
         self.Rp2Rs = self.Rp / self.Rs
         print("alpha: ", self.Rs / self.semi_axis)
+        self.Coefficents = [0.403, 0.256]
 
 
 # PPs = Planet_parameters(4170) # K2-141 b
