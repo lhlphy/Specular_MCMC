@@ -1,5 +1,5 @@
 When change the observation target, do the following checklist:
-1. (parameters.py -- Line30) Change the index of target
+1. (parameters.py -- Line30) Change the index of target. Change Coefficents of lambing effect
 2. (Class_MCMC.py) Change the prior distribution (focus on AB, delta)
 3. (Class_MCMC.py) Change the initial position of walkers
 4. (main.py -- Line) Change the name of target and file (file name is just the name of telescope)
