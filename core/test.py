@@ -95,7 +95,10 @@ if __name__ == '__main__':
     # test Fp2Fs() function
     plt.subplots()
     plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, 0.1, 0.1, 0, Tss, Rp2Rs))
-    plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
+    plt.plot(Theta_array, F_tr)
+    # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
+    plt.xlim([0, 0.5])
+    plt.ylim([-170, -130])
     plt.show()
     
     
