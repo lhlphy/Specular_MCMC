@@ -20,6 +20,16 @@ lam1 = 0.43e-6
 lam2 = 0.89e-6
 Tss_ref = PPs.Tss
 
+def F_Transit(Theta_array, Rp2Rs, co1, co2):
+    time = Theta_array / (2 * np.pi) * P
+    from pytransit import RoadRunnerModel
+    tm = RoadRunnerModel('quadratic')
+    tm.set_data(time)
+    
+    a_sc = a / Rs
+    flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i=0.5*np.pi, e=0.0, w=0.0)
+    return (flux1 - 1) *1e6
+
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
     # Surface temperature model: Toy Model
     condition = cos_zenith < 0
@@ -133,5 +143,5 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, alpha_ellip, delta =0, Tss = Tss_ref, Rp2Rs = 0):
-    return F_thermal(Theta_array, AB, 0, Tss, Rp2Rs) + F_lambert(Theta_array, AB, Rp2Rs) + F_ellip(Theta_array, alpha_ellip) + delta
+def Fp2Fs(Theta_array, AB, F, alpha_ellip, co1, co2, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs):
+    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs) + F_lambert(Theta_array, AB, Rp2Rs) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2)

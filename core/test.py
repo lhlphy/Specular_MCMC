@@ -11,7 +11,38 @@ import cProfile
 import pstats
 import io
 
-# test
+#  # test1
+# if __name__ == '__main__':
+#     print('test')
+#     # import MCMC class
+#     mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
+#     # set parameters
+#     Theta_array = np.linspace(0, 2*np.pi, 100)
+#     AB = 0.1
+#     alpha_ellipse = 3.2351
+#     alpha_Doppler = 2.52 *20
+#     F = 0.5
+#     Tss = 3552
+#     Rp2Rs = 0.0132
+#     offset = 0.2
+#     print("Tss standard is: ", Tss)
+#     print("Rp/Rs standard is: ", Rp2Rs)
+    
+#     F_tr1 = F_Transit(Theta_array, Rp2Rs, 0, 0)
+#     F_tr2 = F_Transit(Theta_array, Rp2Rs, 0.3, 0)
+#     F_tr3 = F_Transit(Theta_array, Rp2Rs, 0, 0.3)
+#     F_tr4 = F_Transit(Theta_array, Rp2Rs, 0.3, 0.3)
+    
+#     plt.figure()
+#     plt.plot(Theta_array, F_tr1, label='0, 0')
+#     plt.plot(Theta_array, F_tr2, label='0.3, 0')
+#     plt.plot(Theta_array, F_tr3, label='0, 0.3')
+#     plt.plot(Theta_array, F_tr4, label='0.3, 0.3')
+#     plt.legend()
+#     plt.show()
+
+
+# test2
 if __name__ == '__main__':
     pr = cProfile.Profile()
     pr.enable()

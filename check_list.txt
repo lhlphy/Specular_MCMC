@@ -7,3 +7,5 @@ When change the observation target, do the following checklist:
 	for ./core_lambert/, "Kepler-10b_lambert"
 5. (main.py -- Line) Change the sigma (errorbar)
 6. Remember to do (2,3,4,5) steps for both ./core/ and ./core_lambert/ folders
+
+ python3 -m pip install siphash24

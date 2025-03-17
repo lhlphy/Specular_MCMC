@@ -37,6 +37,7 @@ if __name__ == '__main__':
     F_specular = F_lambert(Theta_array, AB, Rp2Rs)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
+    F_tr = F_Transit(Theta_array, Rp2Rs, 0.1, 0.1)
     print(f'time1: {time.time() - t1}')
     
     pr.disable()
@@ -53,15 +54,15 @@ if __name__ == '__main__':
     axs[0, 0].set_ylim([min(F_thermal) *1.1, max(F_thermal)*1.2])
     axs[0, 1].plot(Theta_array, F_specular)
     axs[0, 1].set_title("F_specular")
-    axs[1, 0].plot(Theta_array, F_Doppler)
-    axs[1, 0].set_title("F_Doppler")
+    axs[1, 0].plot(Theta_array, F_tr)
+    axs[1, 0].set_title("F_Transit")
     axs[1, 1].plot(Theta_array, F_ellip)
     axs[1, 1].set_title("F_ellip")
     plt.show()
     
     # test Fp2Fs() function
     plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, alpha_ellipse, 0, Tss, Rp2Rs))
+    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, 0.1, 0.1, 0, Tss, Rp2Rs))
     plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
     plt.show()
     
