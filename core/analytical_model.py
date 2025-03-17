@@ -147,8 +147,8 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0):
 #     SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
 #     return SI *1e6
 
-def F_specular(Theta_array, AB, Rp2Rs, offset):
-    SI = A_Fresnel(Theta_array, A_normal=AB, offset = 0.4) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
+def F_specular(Theta_array, AB, Rp2Rs, offset = 0):
+    SI = A_Fresnel(Theta_array, A_normal=AB, offset = offset) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
     SI[np.abs(Theta_array - np.pi) < alpha] = 0
     return SI
 
