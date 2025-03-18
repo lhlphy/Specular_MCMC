@@ -26,12 +26,12 @@ class Planet_parameters:
         self.Tss = self.Stellar_T / np.sqrt(self.semi_axis / self.Rs)
         self.Rp2Rs = self.Rp / self.Rs
         print("alpha: ", self.Rs / self.semi_axis)
-        self.Coefficents = [0.519, 0.178]
+        self.Coefficents = [0.619, 0.106]
 
 
-# PPs = Planet_parameters(4170) # K2-141 b
+PPs = Planet_parameters(4170) # K2-141 b
 # PPs = Planet_parameters(733 - 98) # GJ 367b
 # PPs = Planet_parameters(6427 - 98) # Kepler-10 b
 # PPs = Planet_parameters(6432 - 98) # Kepler-10 b
-PPs = Planet_parameters(30080 - 98) # Kepler-78 b
+# PPs = Planet_parameters(30080 - 98) # Kepler-78 b
     
