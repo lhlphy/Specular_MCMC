@@ -21,13 +21,17 @@ params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and 
 print("\nThe parameters of the Lambert model: ")
 params_l, lower_l, upper_l = mcmc_lambert.estimate_parameters()
 
+# load transit parameters
+Co1, Co2 = mcmc.Co1, mcmc.Co2
+Co1_l, Co2_l = mcmc_lambert.Co1, mcmc_lambert.Co2
+
 # load Kepler data
 dataX = mcmc.data_X
 dataY = mcmc.data_Y
 
 # calculate the model
-data_model = core.analytical_model.Fp2Fs(dataX, *params)
-data_model_l = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, *params_l)
+data_model = core.analytical_model.Fp2Fs(dataX, co1=Co1, co2=Co2, params=params)
+data_model_l = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, co1=Co1_l, co2=Co2_l, params=params_l)
 
 # calculate the chi2 value
 def chi2(dataY, data_Model, errorbar):
@@ -45,10 +49,10 @@ else:
     print("Lambert model is better than Specular model")
 
 # plot the boundary of the 95% confidence interval
-data_model_lower = core.analytical_model.Fp2Fs(dataX, *lower)
-data_model_upper = core.analytical_model.Fp2Fs(dataX, *upper)
-data_model_l_lower = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, *lower_l)
-data_model_l_upper = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, *upper_l)
+data_model_lower = core.analytical_model.Fp2Fs(dataX, co1=Co1, co2=Co2, params=lower)
+data_model_upper = core.analytical_model.Fp2Fs(dataX, co1=Co1, co2=Co2, params=upper)
+data_model_l_lower = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, co1=Co1_l, co2=Co2_l, params=lower_l)
+data_model_l_upper = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, co1=Co1_l, co2=Co2_l, params=upper_l)
 
 # plot the data and model
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -63,7 +67,9 @@ ax.fill_between(dataX, data_model_l_lower, data_model_l_upper,
                 alpha=0.5, color='blue', label='Lambert Model 95% CI')
 ax.set_xlabel('Orbital phase')
 ax.set_ylabel('Fp/Fs (ppm)')
+ax.set_ylim(-10, (np.max(dataY)+mcmc.sigma) *1.2)  # 设置下限为-10，上限自动调整
 ax.legend()
+
 plt.savefig('./output/Kepler_specular_vs_lambert.png')
 plt.show()
 plt.close()

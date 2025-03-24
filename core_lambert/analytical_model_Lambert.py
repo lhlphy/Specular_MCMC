@@ -145,7 +145,10 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB, F, alpha_ellip, co1, co2, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 0):
+def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 0, params = []):
+    if len(params) != 0:
+        AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc  = params
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
+        inc = 90
     return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
