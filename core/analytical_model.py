@@ -152,10 +152,19 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0, inc = 
 #     SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
 #     return SI *1e6
 
-def F_specular(Theta_array, AB, Rp2Rs, offset = 0, inc = 90):
-    SI = A_Fresnel(Theta_array, A_normal=AB, offset = offset, inc = inc) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
-    SI[np.abs(Theta_array - np.pi) < alpha] = 0
-    return SI
+# def F_specular(Theta_array, AB, Rp2Rs, offset = 0, inc = 90):
+#     SI = A_Fresnel(Theta_array, A_normal=AB, offset = offset, inc = inc) /4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2 *1e6
+#     SI[np.abs(Theta_array - np.pi) < alpha] = 0
+#     return SI
+
+def F_specular(Theta_array, An, Rp2Rs, offset = 0, inc = 90):
+    F = 1/4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2
+    Tx = np.abs(np.pi-np.abs(Theta_array))/2
+    Tx = np.acos(np.cos(Tx) * np.sin(inc/180 *np.pi))
+    F = F * np.where(Tx > np.pi/2 - alpha/2, (A_Fresnel(I_angle= Tx , A_normal= An, inc= inc) *(np.pi - 2*Tx)/alpha +  A_Fresnel(I_angle= Tx-alpha/3 , A_normal= An, inc=inc) *(2*Tx - np.pi + alpha)/alpha), A_Fresnel(I_angle= Tx , A_normal= An, inc=inc))
+    
+    F[np.abs(Theta_array - np.pi) < alpha] = 0
+    return F *1e6
 
     
 def F_ellip(Theta_array, alpha_ellip):
