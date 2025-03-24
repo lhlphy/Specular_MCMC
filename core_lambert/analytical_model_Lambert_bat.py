@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from parameters import PPs
 import os
+import batman
 
 # Constants List
 Rs = PPs.Rs
@@ -19,8 +20,27 @@ alpha = np.arcsin(Rs / a)
 lam1 = 0.43e-6
 lam2 = 0.89e-6
 Tss_ref = PPs.Tss
+AU = 149_597_870.7  # km, 1 Astronomical Unit 149597870.7
 
 def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
+    params = batman.TransitParams()
+    params.t0 = 0.                       #time of inferior conjunction
+    params.per = P                      #orbital period
+    params.rp = Rp2Rs                     #planet radius (in units of stellar radii)
+    params.a = a/AU                      #semi-major axis (in units of stellar radii)
+    params.inc = inc                    #orbital inclination (in degrees)
+    params.ecc = 0.                      #eccentricity
+    params.w = 90.                       #longitude of periastron (in degrees)
+    params.u = [co1, co2]                #limb darkening coefficients [u1, u2]
+    params.limb_dark = "quadratic"       #limb darkening model
+    time = Theta_array / (2 * np.pi) * P
+    m = batman.TransitModel(params, time)    #initializes model
+    flux = m.light_curve(params)          #calculates light curve
+    
+    return (flux - 1) *1e6
+    
+    
+def F_Transit_pytransit(Theta_array, Rp2Rs, co1, co2, inc):
     time = Theta_array / (2 * np.pi) * P
     from pytransit import RoadRunnerModel
     tm = RoadRunnerModel('quadratic')
@@ -29,7 +49,7 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
     a_sc = a / Rs
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
     return (flux1 - 1) *1e6
-    
+
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
     # Surface temperature model: Toy Model
     condition = cos_zenith < 0
@@ -71,21 +91,7 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, inc = 90):
-    Ang = np.acos(np.cos(np.abs((np.pi - Theta) / 2)) * np.sin(inc/180 *np.pi))
-    I_angle = np.where(I_angle == -1, Ang, I_angle)
-    # 将I_angle中大于pi/2的值转换为pi/2
-    I_angle = np.where(I_angle > np.pi / 2, np.pi / 2, I_angle)
-    SINI = np.sin(I_angle)
-    COSI = np.cos(I_angle)  
-    n = 2/(1- np.sqrt(A_normal)) -1
-    Co1 = np.sqrt(n**2 - SINI**2)
-
-    Rs = ((COSI - Co1) / (COSI + Co1)) **2
-    Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
-    return (Rs+Rp)/2
-    
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0, inc = 90):
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, inc = 90):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -111,8 +117,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0, inc = 
         def int_func(lam, theta, phi):
             cos_phi = np.cos(phi)
             cos_zenith = np.cos(theta)* np.cos(phi + np.pi/2 - inc/180 *np.pi)
-            zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
-            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs)) * Response(lam)
+            return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - AB) * Response(lam)
 
         # 定义采样点
         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
@@ -144,19 +149,12 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, offset = 0, inc = 
     results = np.array(results) *1e6
     return results
 
-# def F_specular(Theta_array, AB, Rp2Rs, offset):
-#     SI = A_Fresnel(Theta_array, AB, offset= offset)* Rp2Rs**2 * alpha**2 /4 * (1-alpha**2 /24 *(2-np.cos(Theta_array))/ np.sin(Theta_array/2)**2)
-#     SI[(Theta_array < alpha) | (Theta_array > 2*np.pi - alpha) | (np.abs(Theta_array - np.pi) < alpha)] = 0
-#     return SI *1e6
-
-def F_specular(Theta_array, An, Rp2Rs, offset = 0, inc = 90):
-    F = 1/4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2
-    Tx = np.abs(np.pi-np.abs(Theta_array))/2
-    Tx = np.acos(np.cos(Tx) * np.sin(inc/180 *np.pi))
-    F = F * np.where(Tx > np.pi/2 - alpha/2, (A_Fresnel(I_angle= Tx , A_normal= An, inc= inc) *(np.pi - 2*Tx)/alpha +  A_Fresnel(I_angle= Tx-alpha/3 , A_normal= An, inc=inc) *(2*Tx - np.pi + alpha)/alpha), A_Fresnel(I_angle= Tx , A_normal= An, inc=inc))
-    
-    F[np.abs(Theta_array - np.pi) < alpha] = 0
-    return F *1e6
+def F_lambert(Theta_array, AB, Rp2Rs, inc):
+    zt = np.acos(- np.sin(inc/180 *np.pi)* np.cos(Theta_array))
+    Pt = AB * 2/3*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
+    condition = np.abs(Theta_array - np.pi) < alpha
+    Pt = np.where(condition, 0, Pt)
+    return Rp2Rs**2 *alpha**2 * Pt *1e6
 
     
 def F_ellip(Theta_array, alpha_ellip):
@@ -170,5 +168,4 @@ def F_Doppler(Theta_array, alpha_Doppler):
 def Fp2Fs(Theta_array, AB, F, alpha_ellip, co1, co2, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 0):
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
-    offset = 0 # offset = 0.4
-    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc) + F_specular(Theta_array, AB, Rp2Rs, offset, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
+    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
