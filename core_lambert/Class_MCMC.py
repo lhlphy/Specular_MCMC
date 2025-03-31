@@ -65,12 +65,12 @@ class MCMC:
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
         # delta: 正态分布，mu=-5, sigma=3
-        mu, sigma = -12.0, 3.0
+        mu, sigma = 0, 1.0
         log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
-        mu, sigma = PPs.Tss, 100
-        if Tss > PPs.Tss *1.2:
+        mu, sigma = PPs.Tss *0.9, 150
+        if Tss > PPs.Tss *1.1:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
@@ -106,12 +106,12 @@ class MCMC:
         initial[:, 0] = np.random.uniform(0, 0.7, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
         # delta
-        mu, sigma = -12.0, 3.0
+        mu, sigma = 0, 1.0
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
-        mu, sigma = PPs.Tss, 100
+        mu, sigma = PPs.Tss *0.9, 150
         a = (0 - mu) / sigma
-        b = (PPs.Tss * 1.2 - mu) / sigma
+        b = (PPs.Tss * 1.1 - mu) / sigma
         initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
