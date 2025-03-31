@@ -19,7 +19,7 @@ class Planet_parameters:
         self.Stellar_T = row_data['st_teff'] # K, temperature of the Star
         # self.pl_eqT = row_data['pl_eqt']  # K, fully redistribution, planet equilibrium Temperature [K] (from database)
         self.pl_eqT = self.Stellar_T * np.sqrt(self.Rs / 2 /self.semi_axis)  # from theoretical calculation
-        self.Period = row_data['pl_orbper'] # hours, orbital period of the planet
+        self.Period = row_data['pl_orbper'] *24 # hours, orbital period of the planet
         self.Mp_J = row_data['pl_bmassj'] # mass of the planet/Jupiter mass
         self.Ms_S = row_data['st_mass'] # mass of the star/Solar mass
         self.Rs_S = row_data['st_rad'] # radius of the star/Solar radius

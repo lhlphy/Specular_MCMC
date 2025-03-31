@@ -64,14 +64,14 @@ def Response(lam):
         try:
             Response_data = np.loadtxt('Response.txt', delimiter=',')
         except FileNotFoundError:
-            print('Not using response function of any telescope.')
+            # print('Not using response function of any telescope.')
             return 1
 
     # 插值
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, inc = 90):
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -129,7 +129,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = 0, inc = 90):
     results = np.array(results) *1e6
     return results
 
-def F_lambert(Theta_array, AB, Rp2Rs, inc):
+def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90):
     zt = np.acos(- np.sin(inc/180 *np.pi)* np.cos(Theta_array))
     Pt = AB * 3/2*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
     condition = np.abs(Theta_array - np.pi) < alpha
@@ -145,7 +145,7 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 0, params = []):
+def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, params = []):
     if len(params) != 0:
         AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc  = params
     if inc == 0:

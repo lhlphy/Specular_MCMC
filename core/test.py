@@ -54,13 +54,13 @@ if __name__ == '__main__':
     # set parameters
     Theta_array = np.linspace(0, 2*np.pi, 180)
     offset = 0
-    AB = 0.1238
+    AB =  0.0475
     alpha_ellipse = 3.1739
     alpha_Doppler = 0
-    F = 0.0205
-    Tss = 3703
-    Rp2Rs = 0.01275
-    inc = 84
+    F = 0
+    Tss = PPs.Tss
+    Rp2Rs = PPs.Rp2Rs
+    inc = 90
     Coefficents = PPs.Coefficents
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
