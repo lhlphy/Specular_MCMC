@@ -145,6 +145,8 @@ def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
+from Sampling import supersample_decorator
+@supersample_decorator()
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, params = []):
     if len(params) != 0:
         AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc  = params

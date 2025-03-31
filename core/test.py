@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # import MCMC class
     mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
     # set parameters
-    Theta_array = np.linspace(0, 2*np.pi, 180)
+    Theta_array = np.linspace(0, 2*np.pi, 70)
     offset = 0
     AB =  0.0475
     alpha_ellipse = 3.1739
@@ -97,9 +97,10 @@ if __name__ == '__main__':
     plt.subplots()
     plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs, inc))
     plt.plot(Theta_array, F_tr)
+    plt.plot(Theta_array, F_thermal + F_specular + F_ellip + F_tr, '--b')
     # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
-    plt.xlim([0, 0.5])
-    plt.ylim([-200, -130])
+    # plt.xlim([0, 0.5])
+    # plt.ylim([-200, -130])
     plt.show()
     
     
