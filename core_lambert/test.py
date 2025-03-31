@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # import MCMC class
     mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
     # set parameters
-    Theta_array = np.linspace(0, 2*np.pi, 100)
+    Theta_array = np.linspace(0, 2*np.pi, 50)
     offset = 0
     AB = 0.1
     alpha_ellipse = 3.2351
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     F = 0
     Tss = PPs.Tss
     Rp2Rs = PPs.Rp2Rs
-    inc = 60
+    inc = 86
     Coefficents = PPs.Coefficents
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
