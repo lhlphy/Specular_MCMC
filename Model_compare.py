@@ -14,8 +14,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # load the parameters from the MCMC class
-mcmc = core.Class_MCMC.MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=5, nwalkers=64, nsteps=3000, burnin=1500)
-mcmc_lambert = core_lambert.Class_MCMC.MCMC('Kepler-10b_lambert', 'Kepler', sigma=2.5, ndim=5, nwalkers=64, nsteps=3000, burnin=1500)
+mcmc = core.Class_MCMC.MCMC('K2-141b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=3000, burnin=1500)
+mcmc_lambert = core_lambert.Class_MCMC.MCMC('K2-141b_lambert', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=3000, burnin=1500)
 print("\nThe parameters of the Specular model: ")
 params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
 print("\nThe parameters of the Lambert model: ")
@@ -67,10 +67,11 @@ ax.fill_between(dataX, data_model_l_lower, data_model_l_upper,
                 alpha=0.5, color='blue', label='Lambert Model 95% CI')
 ax.set_xlabel('Orbital phase')
 ax.set_ylabel('Fp/Fs (ppm)')
-ax.set_ylim(-10, (np.max(dataY)+mcmc.sigma) *1.2)  # 设置下限为-10，上限自动调整
 ax.legend()
 
 plt.savefig('./output/Kepler_specular_vs_lambert.png')
+ax.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.1)  # 设置下限为-10，上限自动调整
+plt.savefig('./output/Kepler_specular_vs_lambert_nT.png')
 plt.show()
 plt.close()
 
