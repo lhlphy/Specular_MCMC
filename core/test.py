@@ -103,4 +103,38 @@ if __name__ == '__main__':
     # plt.ylim([-200, -130])
     plt.show()
     
+# # test quadratic function
+# # conclusion: two quadratic functions are the same
+# if __name__ == '__main__':
+#     t1 = time.time()
+#     print('test')
+#     # import MCMC class
+#     mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
+#     # set parameters
+#     Theta_array = np.linspace(0, 2*np.pi, 70)
+#     offset = 0
+#     AB =  0.0475
+#     alpha_ellipse = 3.1739
+#     alpha_Doppler = 0
+#     F = 0
+#     Tss = PPs.Tss
+#     Rp2Rs = PPs.Rp2Rs
+#     inc = 90
+#     Coefficents = [0, 0]
+#     print("Tss standard is: ", Tss)
+#     print("Rp/Rs standard is: ", Rp2Rs)
+    
+#     # plot each function
+
+#     F_tr = F_Transit(Theta_array, Rp2Rs, *Coefficents, inc)
+#     F_tr_comp = F_Transit_comp(Theta_array, Rp2Rs, *Coefficents, inc)
+#     print(f'time1: {time.time() - t1}')
+    
+#     plt.plot(Theta_array, F_tr, label='F_Transit')
+#     plt.plot(Theta_array, F_tr_comp,'--', label='F_Transit_comp')
+#     plt.legend()
+#     plt.show()
+
+
+    
     

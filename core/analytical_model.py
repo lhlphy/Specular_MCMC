@@ -6,9 +6,11 @@ import matplotlib.pyplot as plt
 from parameters import PPs
 import os
 from Sampling import supersample_decorator
+from pytransit import RoadRunnerModel, QuadraticModel
 
 # Constants List
 Rs = PPs.Rs
+Rp = PPs.Rp
 e = PPs.eccentricity
 a = PPs.semi_axis
 Ts = PPs.Stellar_T
@@ -23,13 +25,30 @@ Tss_ref = PPs.Tss
 
 def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
     time = Theta_array / (2 * np.pi) * P
-    from pytransit import RoadRunnerModel
     tm = RoadRunnerModel('quadratic')
     tm.set_data(time)
     
     a_sc = a / Rs
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
     return (flux1 - 1) *1e6
+
+def F_Transit_comp(Theta_array, Rp2Rs, co1, co2, inc):
+    time = Theta_array / (2 * np.pi) * P
+    tm = QuadraticModel()
+    tm.set_data(time)
+    
+    a_sc = a / Rs
+    flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
+    return (flux1 - 1) *1e6
+
+def Eclipse(Theta_array, Rp2Rs, inc):
+    time = (Theta_array + np.pi) / (2 * np.pi) * P
+    tm = RoadRunnerModel('uniform')
+    tm.set_data(time)
+    
+    a_sc = a / Rp
+    flux1 = tm.evaluate(k= 1/Rp2Rs, ldc=[0, 0], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
+    return (flux1 - np.min(flux1)) / np.max(flux1)
     
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
     # Surface temperature model: Toy Model
@@ -107,10 +126,10 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, offset = 0
         #     results.append(-Rp2Rs**2)
         #     # print((Rp/Rs)**2)
         #     continue
-        if np.abs(Theta - np.pi) < alpha: # eclipse
+        # if np.abs(Theta - np.pi) < alpha: # eclipse
 
-            results.append(0)
-            continue
+        #     results.append(0)
+        #     continue
 
         def int_func(lam, theta, phi):
             cos_phi = np.cos(phi)
@@ -164,7 +183,7 @@ def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, offset = 0, inc = 90):
     Tx = np.acos(np.cos(Tx) * np.sin(inc/180 *np.pi))
     F = F * np.where(Tx > np.pi/2 - alpha/2, (A_Fresnel(I_angle= Tx , A_normal= An, inc= inc) *(np.pi - 2*Tx)/alpha +  A_Fresnel(I_angle= Tx-alpha/3 , A_normal= An, inc=inc) *(2*Tx - np.pi + alpha)/alpha), A_Fresnel(I_angle= Tx , A_normal= An, inc=inc))
     
-    F[np.abs(Theta_array - np.pi) < alpha] = 0
+    # F[np.abs(Theta_array - np.pi) < alpha] = 0 # eclipse
     return F *1e6
 
     
@@ -184,4 +203,4 @@ def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = T
         print('Warning: inc is 0, set to 90.')
         inc = 90
     offset = 0 # offset = 0.4
-    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc) + F_specular(Theta_array, AB, Rp2Rs, offset, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
+    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc) + F_specular(Theta_array, AB, Rp2Rs, offset, inc)) *Eclipse(Theta_array, Rp2Rs, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
