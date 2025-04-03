@@ -93,15 +93,15 @@ if __name__ == '__main__':
     axs[1, 1].set_title("F_ellip")
     plt.show()
     
-    # test Fp2Fs() function
-    plt.subplots()
-    plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs, inc))
-    plt.plot(Theta_array, F_tr)
-    plt.plot(Theta_array, F_thermal + F_specular + F_ellip + F_tr, '--b')
-    # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
-    # plt.xlim([0, 0.5])
-    # plt.ylim([-200, -130])
-    plt.show()
+#     # test Fp2Fs() function
+#     plt.subplots()
+#     plt.plot(Theta_array, Fp2Fs(Theta_array, AB, 0, alpha_ellipse, *Coefficents, 0, Tss, Rp2Rs, inc))
+#     plt.plot(Theta_array, F_tr)
+#     plt.plot(Theta_array, F_thermal + F_specular + F_ellip + F_tr, '--b')
+#     # plt.ylim([0, max(F_thermal + F_specular + F_Doppler + F_ellip)*1.1])
+#     # plt.xlim([0, 0.5])
+#     # plt.ylim([-200, -130])
+#     plt.show()
     
 # # test quadratic function
 # # conclusion: two quadratic functions are the same
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 #     Coefficents = PPs.Coefficents
 #     print("Tss standard is: ", Tss)
 #     print("Rp/Rs standard is: ", Rp2Rs)
-#     for inc in [90, 80, 70, 60]:
+#     for inc in [90, 80]:
 #     # plot each function
 #         F_thermal1 = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc)
 #         F_thermal_comp1 = F_thermal_comp(Theta_array, AB, F, Tss, Rp2Rs, offset, inc)
