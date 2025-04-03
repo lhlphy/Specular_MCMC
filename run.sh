@@ -15,7 +15,8 @@ echo MCMC
 
 # The main program
 # python core/main.py
-python core_lambert/main.py
+# python core_lambert/main.py
+python core_comb/main.py
 
 # python test.py
 
