@@ -73,7 +73,7 @@ def supersample_decorator(num_samples=7):
     def decorator(model_func):
         def wrapper(data_X, *args, **kwargs):
             # 如果 data_X 是标量或不提供超采样，直接调用原始函数
-            if not isinstance(data_X, np.ndarray) or data_X.ndim == 0:
+            if not isinstance(data_X, np.ndarray) or data_X.ndim == 0 or num_samples == 1:
                 return model_func(data_X, *args, **kwargs)
             
             # 超采样逻辑
