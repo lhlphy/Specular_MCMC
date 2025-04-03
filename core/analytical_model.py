@@ -32,15 +32,6 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
     return (flux1 - 1) *1e6
 
-def F_Transit_comp(Theta_array, Rp2Rs, co1, co2, inc):
-    time = Theta_array / (2 * np.pi) * P
-    tm = QuadraticModel()
-    tm.set_data(time)
-    
-    a_sc = a / Rs
-    flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
-    return (flux1 - 1) *1e6
-
 def Eclipse(Theta_array, Rp2Rs, inc):
     time = (Theta_array + np.pi) / (2 * np.pi) * P
     tm = RoadRunnerModel('uniform')
@@ -91,11 +82,10 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0, inc = 90):
-    if offset ==2:
-        print('Warning(A_Fresnel): offset is 2, exceed boundary.')
+def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, inc = 90):
     
-    Ang = np.acos(np.cos(np.abs((np.pi - Theta) / 2) + alpha/3 *offset) * np.sin(inc/180 *np.pi))
+    Theta = np.acos(np.cos(Theta) * np.sin(inc/180 *np.pi))
+    Ang = np.abs((np.pi - Theta) / 2) 
     I_angle = np.where(I_angle == -1, Ang, I_angle)
     # 将I_angle中大于pi/2的值转换为pi/2
     I_angle = np.where(I_angle > np.pi / 2, np.pi / 2, I_angle)
@@ -108,6 +98,52 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, offset = 0, inc = 90):
     Rp = ((Co1 - n**2 *COSI)/ (Co1 + n**2 *COSI))**2
     return (Rs+Rp)/2
     
+# def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, offset = 0, inc = 90, lam1 = lam1, lam2 = lam2):
+#     # print('1')
+#     results = []
+#     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
+#     lam_array = np.linspace(lam1, lam2, 100)
+#     int_result = np.sum(B(lam_array, Ts) * Response(lam_array)) * (lam_array[1] - lam_array[0])
+    
+#     Cor = Rp2Rs**2 / (np.pi *  int_result)
+#     for i, Theta in enumerate(Theta_array):
+
+#         def int_func(lam, theta, phi):
+#             cos_phi = np.cos(phi)
+#             cos_zenith = np.cos(theta)* np.cos(phi + np.pi/2 - inc/180 *np.pi)
+#             zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
+#             return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs, offset=offset)) * Response(lam)
+
+#         # 定义采样点
+#         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
+#         theta_list = np.linspace(np.pi/2 - Theta, 3*np.pi/2 - Theta, 180)
+#         lam_list = np.linspace(lam1, lam2, 8)
+
+#         # 构造广播数组
+#         theta_array = theta_list[:, np.newaxis, np.newaxis]  # 形状 (180, 1, 1)
+#         phi_array = phi_list[np.newaxis, :, np.newaxis]      # 形状 (1, 180, 1)
+#         lam_array = lam_list[np.newaxis, np.newaxis, :]      # 形状 (1, 1, 10)
+
+#         # # 矢量化计算 I_matrix
+#         I_matrix = int_func(lam_array, theta_array, phi_array)
+
+#         # 计算结果
+#         result = np.sum(I_matrix) * (phi_list[1] - phi_list[0]) * (theta_list[1] - theta_list[0]) * (lam_list[1] - lam_list[0])
+#         # result, _ = tplquad(
+#         #     int_func,
+#         #     -np.pi / 2, np.pi / 2,  # phi limits
+#         #     lambda phi: np.pi/2 - Theta ,
+#         #     lambda phi: 3* np.pi/2 - Theta ,  # theta limits -> 3* np.pi/2 - Theta ||if F=0 use np.pi/2
+#         #     lambda phi, theta: lam1,
+#         #     lambda phi, theta: lam2,  # lam limits
+#         #     epsabs=1e-3,       # Increase absolute tolerance
+#         #     epsrel=1e-3       # Increase relative tolerance
+#         # )
+#         results.append(result* Cor)
+
+#     results = np.array(results) *1e6
+#     return results
+
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, offset = 0, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
@@ -116,24 +152,11 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, offset = 0
     int_result = np.sum(B(lam_array, Ts) * Response(lam_array)) * (lam_array[1] - lam_array[0])
     
     Cor = Rp2Rs**2 / (np.pi *  int_result)
+    Theta_array = np.acos(np.cos(Theta_array) * np.sin(inc/180 *np.pi)) # 计算入射角
     for i, Theta in enumerate(Theta_array):
-        # print(Theta)
-        # if Theta > np.pi + 0.01:  # 关于np.pi对称 
-        #     results.append(results[len(Theta_array) - i - 1])
-        #     continue
-            
-        # if Theta < alpha or Theta > 2*np.pi - alpha: # transit
-        #     results.append(-Rp2Rs**2)
-        #     # print((Rp/Rs)**2)
-        #     continue
-        # if np.abs(Theta - np.pi) < alpha: # eclipse
-
-        #     results.append(0)
-        #     continue
-
         def int_func(lam, theta, phi):
             cos_phi = np.cos(phi)
-            cos_zenith = np.cos(theta)* np.cos(phi + np.pi/2 - inc/180 *np.pi)
+            cos_zenith = np.cos(theta)* np.cos(phi)
             zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
             return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - A_Fresnel(A_normal=AB, I_angle = zenith_obs, offset=offset)) * Response(lam)
 
@@ -177,10 +200,10 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, offset = 0
 #     SI[np.abs(Theta_array - np.pi) < alpha] = 0
 #     return SI
 
-def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, offset = 0, inc = 90):
-    F = 1/4 * np.sin(alpha/2) *(alpha + np.sin(alpha)) *Rp2Rs**2
+def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, offset = 0, inc = 90): 
+    F = Rp2Rs**2 * np.sin(alpha/2)**2
+    Theta_array = np.acos(np.cos(Theta_array) * np.sin(inc/180 *np.pi))
     Tx = np.abs(np.pi-np.abs(Theta_array))/2
-    Tx = np.acos(np.cos(Tx) * np.sin(inc/180 *np.pi))
     F = F * np.where(Tx > np.pi/2 - alpha/2, (A_Fresnel(I_angle= Tx , A_normal= An, inc= inc) *(np.pi - 2*Tx)/alpha +  A_Fresnel(I_angle= Tx-alpha/3 , A_normal= An, inc=inc) *(2*Tx - np.pi + alpha)/alpha), A_Fresnel(I_angle= Tx , A_normal= An, inc=inc))
     
     # F[np.abs(Theta_array - np.pi) < alpha] = 0 # eclipse

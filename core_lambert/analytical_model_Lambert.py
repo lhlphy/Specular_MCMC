@@ -5,9 +5,11 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from parameters import PPs
 import os
+from pytransit import RoadRunnerModel
 
 # Constants List
 Rs = PPs.Rs
+Rp = PPs.Rp
 e = PPs.eccentricity
 a = PPs.semi_axis
 Ts = PPs.Stellar_T
@@ -22,13 +24,21 @@ Tss_ref = PPs.Tss
 
 def F_Transit(Theta_array, Rp2Rs, co1, co2, inc):
     time = Theta_array / (2 * np.pi) * P
-    from pytransit import RoadRunnerModel
     tm = RoadRunnerModel('quadratic')
     tm.set_data(time)
     
     a_sc = a / Rs
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
     return (flux1 - 1) *1e6
+
+def Eclipse(Theta_array, Rp2Rs, inc):
+    time = (Theta_array + np.pi) / (2 * np.pi) * P
+    tm = RoadRunnerModel('uniform')
+    tm.set_data(time)
+    
+    a_sc = a / Rp
+    flux1 = tm.evaluate(k= 1/Rp2Rs, ldc=[0, 0], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
+    return (flux1 - np.min(flux1)) / np.max(flux1)
 
 def Toy_model(cos_zenith, AB, F=0, Tss = Tss_ref):
     # Surface temperature model: Toy Model
@@ -79,6 +89,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, 
     int_result = np.sum(B(lam_array, Ts) * Response(lam_array)) * (lam_array[1] - lam_array[0])
     
     Cor = Rp2Rs**2 / (np.pi *  int_result)
+    Theta_array = np.acos(np.cos(Theta_array) * np.sin(inc/180 *np.pi)) # 计算入射角
     for i, Theta in enumerate(Theta_array):
         # print(Theta)
         # if Theta > np.pi + 0.01:  # 关于np.pi对称 
@@ -96,7 +107,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, 
 
         def int_func(lam, theta, phi):
             cos_phi = np.cos(phi)
-            cos_zenith = np.cos(theta)* np.cos(phi + np.pi/2 - inc/180 *np.pi)
+            cos_zenith = np.cos(theta)* np.cos(phi)
             return -B(lam, Toy_model(cos_zenith, AB, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - AB) * Response(lam)
 
         # 定义采样点
@@ -153,4 +164,4 @@ def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = T
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
-    return F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
+    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc)) *Eclipse(Theta_array, Rp2Rs, inc) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc)
