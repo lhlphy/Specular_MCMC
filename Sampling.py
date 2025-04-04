@@ -1,6 +1,6 @@
 import numpy as np
 
-def supersample(model_func, data_X, params, num_samples=7):
+def supersample(model_func, data_X, params, num_samples=1):
     """
     对连续模型进行超采样，通过积分计算离散采样点的预测值。
     
@@ -57,7 +57,7 @@ def supersample(model_func, data_X, params, num_samples=7):
     return model_pred
 
 
-def supersample_decorator(num_samples=3):
+def supersample_decorator(num_samples=1):
     """
     装饰器：对连续模型函数进行超采样，通过 Simpson 方法计算离散采样点的预测值。
     
