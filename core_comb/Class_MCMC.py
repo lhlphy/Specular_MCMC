@@ -168,6 +168,9 @@ class MCMC:
         path = os.path.join('Target', self.target_name, f'{self.file_name}_mcmc_samples.npy')
         return np.load(path)
     
+    def chi2_cal(self, dataY, data_Model, errorbar):
+        return np.sum(((dataY - data_Model) / errorbar)**2) / len(dataY)
+    
     def plot_fit(self, samples=None, num_samples=100):
         """绘制观测数据与模型预测的拟合图"""
         if samples is None:
@@ -183,9 +186,17 @@ class MCMC:
         plt.xlabel("Phase (normalized)")
         plt.ylabel("Flux")
         plt.legend()
-        path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit.pdf')
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit1.pdf')
+        plt.savefig(path, format='pdf')
+        # save another extended figure
+        plt.ylim([-10, np.max(self.data_Y)*1.1])
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit2.pdf')
         plt.savefig(path, format='pdf')
         plt.close()
+        
+        # calculate chi2
+        chi2 = self.chi2_cal(self.data_Y, model_pred, self.sigma)
+        print("Chi2: ", chi2)
     
     def plot_trace(self):
         """绘制迹线图以检查收敛性"""
