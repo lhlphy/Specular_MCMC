@@ -142,7 +142,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, 
 
 def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90, alpha=PPs.alpha):
     zt = np.acos(- np.sin(inc/180 *np.pi)* np.cos(Theta_array))
-    Pt = AB * 3/2*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
+    Pt = AB * 2/3*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
     # condition = np.abs(Theta_array - np.pi) < alpha
     # Pt = np.where(condition, 0, Pt)
     return Rp2Rs**2 *alpha**2 * Pt *1e6

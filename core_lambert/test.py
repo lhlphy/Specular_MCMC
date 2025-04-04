@@ -53,10 +53,10 @@ if __name__ == '__main__':
     
     # subplot, plot each function as a subplot, so 4 subplots in total
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-    axs[0, 0].plot(Theta_array, F_specular1/np.max(F_specular1), 'b')
-    axs[0, 0].plot(Theta_array, F_thermal1/np.max(F_thermal1), 'r')
-    axs[0, 0].plot(Theta_array, F_specular2/np.max(F_specular1), 'b--')
-    axs[0, 0].plot(Theta_array, F_thermal2/np.max(F_thermal1), 'r--')
+    axs[0, 0].plot(Theta_array, F_specular1, 'b')
+    axs[0, 0].plot(Theta_array, F_thermal1, 'r')
+    axs[0, 0].plot(Theta_array, F_specular2, 'b--')
+    axs[0, 0].plot(Theta_array, F_thermal2, 'r--')
     axs[0, 0].set_title("F_thermal")
     # axs[0, 0].set_ylim([min(F_thermal) *1.1, max(F_thermal)*1.2])
     axs[0, 1].plot(Theta_array, F_specular1)
