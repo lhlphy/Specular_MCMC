@@ -125,8 +125,8 @@ def F_thermal(Theta_array, AB_D, AB_S, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, in
 def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90):
     zt = np.acos(- np.sin(inc/180 *np.pi)* np.cos(Theta_array))
     Pt = AB * 3/2*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
-    condition = np.abs(Theta_array - np.pi) < alpha
-    Pt = np.where(condition, 0, Pt)
+    # condition = np.abs(Theta_array - np.pi) < alpha
+    # Pt = np.where(condition, 0, Pt)
     return Rp2Rs**2 *alpha**2 * Pt *1e6
 
 def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, inc = 90):
