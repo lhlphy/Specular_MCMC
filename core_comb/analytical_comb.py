@@ -81,7 +81,7 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
-def F_thermal(Theta_array, AB_D, AB_S, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2, alpha = PPs.alpha):
+def F_thermal(Theta_array, AB_D, AB_S, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -171,4 +171,4 @@ def Fp2Fs(Theta_array, AB_D=0, AB_S=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
-    return (F_thermal(Theta_array, AB_D, AB_S, F, Tss, Rp2Rs, inc, alpha) + F_lambert(Theta_array, AB_D, Rp2Rs, inc, alpha) + F_specular(Theta_array, AB_S, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
+    return (F_thermal(Theta_array, AB_D, AB_S, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB_D, Rp2Rs, inc, alpha) + F_specular(Theta_array, AB_S, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)

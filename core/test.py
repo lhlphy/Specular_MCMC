@@ -66,8 +66,8 @@ if __name__ == '__main__':
     print("Rp/Rs standard is: ", Rp2Rs)
     
     # plot each function
-    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, offset, inc)
-    F_specular = F_specular(Theta_array, AB, Rp2Rs, offset, inc)
+    F_thermal = F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc)
+    F_specular = F_specular(Theta_array, AB, Rp2Rs, inc)
     F_Doppler = F_Doppler(Theta_array, alpha_Doppler)
     F_ellip = F_ellip(Theta_array, alpha_ellipse)
     F_tr = F_Transit(Theta_array, Rp2Rs, *Coefficents, inc)

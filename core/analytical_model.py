@@ -144,7 +144,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, inc = 90):
 #     results = np.array(results) *1e6
 #     return results
 
-def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2, alpha = PPs.alpha):
+def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
     # manual calculate "quad(lambda lam: B(lam, Ts)* Response(lam), lam1, lam2, limit=100)[0]"
@@ -225,4 +225,4 @@ def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = T
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
-    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc, alpha) + F_specular(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
+    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_specular(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)

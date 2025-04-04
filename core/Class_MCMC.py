@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=7, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=8, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["A", "alpha_ellip", "delta", "Tss", "Rp/Rs", "F", "inc"]
+        self.labels = ["A", "alpha_ellip", "delta", "Tss", "Rp/Rs", "F", "inc", "alpha"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
