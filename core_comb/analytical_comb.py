@@ -100,7 +100,7 @@ def F_thermal(Theta_array, AB_D, AB_S, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, in
             cos_phi = np.cos(phi)
             cos_zenith = np.cos(theta)* np.cos(phi)
             zenith_obs = np.arccos(- np.cos(theta + Theta)* cos_phi)
-            return -B(lam, Toy_model(cos_zenith, AB_D + AB_S, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - AB_D - A_Fresnel(A_normal=AB_S, I_angle = zenith_obs)) * Response(lam)
+            return -B(lam, Toy_model(cos_zenith, AB_D + AB_S, F, Tss)) * cos_phi**2 * np.cos(Theta + theta) *(1 - AB_D - AB_S) * Response(lam)
 
         # 定义采样点
         phi_list = np.linspace(-np.pi / 2, np.pi / 2, 180)
