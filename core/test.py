@@ -74,11 +74,11 @@ if __name__ == '__main__':
     print(f'time1: {time.time() - t1}')
     
     pr.disable()
-    # s = io.StringIO()
-    # sortby = 'cumulative'
-    # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    # ps.print_stats()
-    # print(s.getvalue())
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats(100)
+    print(s.getvalue())
     
     # subplot, plot each function as a subplot, so 4 subplots in total
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))

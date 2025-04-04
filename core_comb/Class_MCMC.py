@@ -57,9 +57,12 @@ class MCMC:
         log_prior_ABD = 0.0  # 均匀分布的对数概率为常数
         
         # AB_S: 均匀分布 [0, 0.3]
-        if not (0 <= AB_S <= 0.3):
+        if not (0 <= AB_S <= 0.7):
             return -np.inf
         log_prior_ABS = 0.0  # 均匀分布的对数概率为常数
+        
+        if not (0 <= AB_D + AB_S < 1):  # 确保 AB_D + AB_S < 1
+            return -np.inf
         
         # alpha_ellip: 非负正态分布，mu=5, sigma=5
         if alpha_ellip < 0:
@@ -111,8 +114,8 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.7, self.nwalkers)  # AB_D
-        initial[:, 1] = np.random.uniform(0, 0.3, self.nwalkers)  # AB_S
+        initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB_D
+        initial[:, 1] = np.random.uniform(0, 0.5, self.nwalkers)  # AB_S
         initial[:, 2] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
         # delta
         mu, sigma = -5.5, 1.2
