@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=8, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=9, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["A_diffuse", "A_specular", "alpha_ellip", "delta", "Tss", "Rp/Rs", "F", "inc"]
+        self.labels = ["A_diffuse", "A_specular", "alpha_ellip", "delta", "Tss", "Rp/Rs", "F", "inc", "alpha"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
@@ -49,7 +49,7 @@ class MCMC:
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB_D, AB_S, alpha_ellip, delta, Tss, Rp2Rs, F, inc = params
+        AB_D, AB_S, alpha_ellip, delta, Tss, Rp2Rs, F, inc, alpha = params
         
         # AB_D: 均匀分布 [0, 0.7]
         if not (0 <= AB_D <= 0.7):
@@ -79,7 +79,7 @@ class MCMC:
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # F: 非负正态分布，mu=0, sigma=0.05
@@ -93,8 +93,12 @@ class MCMC:
             return -np.inf
         mu, sigma = 90, 5
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
+        
+        # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
+        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
 
-        return log_prior_ABD+ log_prior_ABS + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc
+        return log_prior_ABD+ log_prior_ABS + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -119,7 +123,7 @@ class MCMC:
         b = (PPs.Tss * 1.1 - mu) / sigma
         initial[:, 4] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
         initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # F
         mu, sigma = 0, 0.03
@@ -129,6 +133,9 @@ class MCMC:
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
         initial[:, 7] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
+        # alpha
+        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        initial[:, 8] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池

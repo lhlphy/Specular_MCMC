@@ -44,13 +44,12 @@ class MCMC:
 
     def log_likelihood(self, params):
         """对数似然函数"""
-        AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc = params
-        model = Fp2Fs(self.data_X, AB, F, alpha_ellip, self.Co1, self.Co2, delta, Tss, Rp2Rs, inc)
+        model = Fp2Fs(self.data_X, co1= self.Co1, co2= self.Co2, params=params)
         return -0.5 * np.sum((self.data_Y - model) ** 2 / self.sigma**2 + np.log(2 * np.pi * self.sigma**2))
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc = params
+        AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc, alpha = params
         
         # AB: 均匀分布 [0, 0.3]
         if not (0 <= AB <= 0.3):
@@ -75,7 +74,7 @@ class MCMC:
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # F: 非负正态分布，mu=0, sigma=0.05
@@ -89,8 +88,12 @@ class MCMC:
             return -np.inf
         mu, sigma = 90, 5
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
+        
+        # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
+        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
 
-        return log_prior_AB + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc
+        return log_prior_AB + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -114,7 +117,7 @@ class MCMC:
         b = (PPs.Tss * 1.1 - mu) / sigma
         initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.01 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
         initial[:, 4] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # F
         mu, sigma = 0, 0.03
@@ -124,6 +127,9 @@ class MCMC:
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
         initial[:, 6] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
+        # alpha
+        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        initial[:, 7] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
@@ -162,8 +168,7 @@ class MCMC:
         plt.figure(figsize=(10, 6))
         for ind in inds:
             sample = samples[ind]
-            AB, alpha_ellip, delta, Tss, Rp2Rs, F, inc  = sample
-            model_pred = Fp2Fs(self.data_X, AB, F, alpha_ellip, self.Co1, self.Co2, delta, Tss, Rp2Rs, inc)
+            model_pred = Fp2Fs(self.data_X, co1=self.Co1, co2=self.Co2, params=sample)
             plt.plot(self.data_X / (2 * np.pi), model_pred, "C1", alpha=0.1)
         plt.errorbar(self.data_X / (2 * np.pi), self.data_Y, yerr=self.sigma, fmt=".k", capsize=0, label="Data")
         plt.xlabel("Phase (normalized)")
