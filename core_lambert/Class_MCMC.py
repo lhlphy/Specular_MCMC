@@ -64,7 +64,7 @@ class MCMC:
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
         # delta: 正态分布，mu=-5, sigma=3
-        mu, sigma = -5.5, 1.2
+        mu, sigma = 0, 1.0
         log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # Tss: 正态分布，mu=Tss_ref, sigma=200
@@ -86,7 +86,7 @@ class MCMC:
         # inc: inc<90的半正态分布，mu=90, sigma=5
         if inc < 75 or inc > 90:
             return -np.inf
-        mu, sigma = 85.1, 3.8
+        mu, sigma = 86.3, 3.1
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
@@ -109,7 +109,7 @@ class MCMC:
         initial[:, 0] = np.random.uniform(0, 0.7, self.nwalkers)  # AB
         initial[:, 1] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
         # delta
-        mu, sigma = -5.5, 1.2
+        mu, sigma = 0, 1.0
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # Tss
         mu, sigma = PPs.Tss *0.9, 150
@@ -123,7 +123,7 @@ class MCMC:
         mu, sigma = 0, 0.05
         initial[:, 5] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
         # inc
-        mu, sigma = 85.1, 3.8
+        mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
         initial[:, 6] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)

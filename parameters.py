@@ -28,13 +28,13 @@ class Planet_parameters:
         self.alpha = np.arcsin(self.Rs / self.semi_axis)
         print("alpha: ", self.Rs / self.semi_axis)
         # self.Coefficents = [0.619, 0.106] # K2-141 b
-        # self.Coefficents = [0.666, 0.062] # K2-141 b
-        self.Coefficents = [0.403, 0.256] # Kepler-10b
+        self.Coefficents = [0.666, 0.062] # K2-141 b
+        # self.Coefficents = [0.403, 0.256] # Kepler-10b
 
 
-# PPs = Planet_parameters(4170) # K2-141 b
+PPs = Planet_parameters(4170) # K2-141 b
 # PPs = Planet_parameters(733 - 98) # GJ 367b
-PPs = Planet_parameters(6427 - 98) # Kepler-10 b
+# PPs = Planet_parameters(6427 - 98) # Kepler-10 b
 # PPs = Planet_parameters(6432 - 98) # Kepler-10 b
 # PPs = Planet_parameters(30080 - 98) # Kepler-78 b
     
