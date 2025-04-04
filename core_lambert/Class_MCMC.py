@@ -86,7 +86,7 @@ class MCMC:
         # inc: inc<90的半正态分布，mu=90, sigma=5
         if inc < 75 or inc > 90:
             return -np.inf
-        mu, sigma = 90, 5
+        mu, sigma = 85.1, 3.8
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
@@ -123,7 +123,7 @@ class MCMC:
         mu, sigma = 0, 0.05
         initial[:, 5] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
         # inc
-        mu, sigma = 90, 5
+        mu, sigma = 85.1, 3.8
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
         initial[:, 6] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
