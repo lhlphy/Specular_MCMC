@@ -25,6 +25,7 @@ class Planet_parameters:
         self.Rs_S = row_data['st_rad'] # radius of the star/Solar radius
         self.Tss = self.Stellar_T / np.sqrt(self.semi_axis / self.Rs)
         self.Rp2Rs = self.Rp / self.Rs
+        self.alpha = np.arcsin(self.Rs / self.semi_axis)
         print("alpha: ", self.Rs / self.semi_axis)
         # self.Coefficents = [0.619, 0.106] # K2-141 b
         # self.Coefficents = [0.666, 0.062] # K2-141 b
