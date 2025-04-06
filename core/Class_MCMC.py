@@ -185,9 +185,6 @@ class MCMC:
         plt.savefig(path, format='pdf')
         plt.close()
         
-        # calculate chi2
-        chi2 = self.chi2_cal(self.data_Y, model_pred, self.sigma)
-        print("Chi2: ", chi2)
     
     def plot_trace(self):
         """绘制迹线图以检查收敛性"""
@@ -244,6 +241,11 @@ class MCMC:
         upper = np.percentile(samples, 84, axis=0)
         # save the results to MCMC
         self.medians = medians
+        
+        # calculate chi2
+        model_pred = Fp2Fs(self.data_X, co1=self.Co1, co2=self.Co2, params=medians)
+        chi2 = self.chi2_cal(self.data_Y[10:62], model_pred[10:62], self.sigma)
+        print("Chi2: ", chi2)
 
         lower_errors = medians - lower
         upper_errors = upper - medians

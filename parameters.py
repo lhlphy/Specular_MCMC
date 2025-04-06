@@ -27,6 +27,7 @@ class Planet_parameters:
         self.Rp2Rs = self.Rp / self.Rs
         self.alpha = np.arcsin(self.Rs / self.semi_axis)
         print("alpha: ", self.Rs / self.semi_axis)
+        print("Tss: ", self.Tss)
         # self.Coefficents = [0.619, 0.106] # K2-141 b
         self.Coefficents = [0.666, 0.062] # K2-141 b
         # self.Coefficents = [0.403, 0.256] # Kepler-10b
