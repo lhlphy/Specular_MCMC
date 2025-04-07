@@ -165,10 +165,12 @@ def F_Doppler(Theta_array, alpha_Doppler):
 
 from Sampling import supersample_decorator
 @supersample_decorator()
-def Fp2Fs(Theta_array, AB_D=0, AB_S=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha =PPs.alpha, params = []):
+def Fp2Fs(Theta_array, AB_D=0, AB_S=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha =PPs.alpha, params = [], AA = -1):
     if len(params) != 0:
         AB_D, AB_S, alpha_ellip, delta, Tss, Rp2Rs, F, inc, alpha  = params
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
+    if AA != -1:
+        AB_S = AA
     return (F_thermal(Theta_array, AB_D, AB_S, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB_D, Rp2Rs, inc, alpha) + F_specular(Theta_array, AB_S, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
