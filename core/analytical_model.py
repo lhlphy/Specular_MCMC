@@ -27,6 +27,7 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
     time = Theta_array / (2 * np.pi) * P
     tm = RoadRunnerModel('quadratic')
     tm.set_data(time)
+    # tm.set_data(time, exptimes=P/72, nsamples=10)
     
     a_sc = 1/np.sin(alpha)   # a / Rs
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
@@ -225,4 +226,5 @@ def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, delta =0, Tss = T
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
+    delta = 0
     return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_specular(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha) + F_ellip(Theta_array, alpha_ellip) + delta + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
