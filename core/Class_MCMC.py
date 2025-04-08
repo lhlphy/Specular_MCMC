@@ -225,7 +225,7 @@ class MCMC:
         
         # calculate chi2
         model_pred = Fp2Fs(self.data_X, params=medians)
-        self.chi2 = self.chi2_cal(self.data_Y, model_pred, self.sigma)
+        self.chi2 = self.chi2_cal(self.data_Y[10:62], model_pred[10:62], self.sigma)
         print("Chi2: ", self.chi2)
 
         lower_errors = medians - lower

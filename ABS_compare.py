@@ -32,17 +32,17 @@ for i, AB_S in enumerate(AB_S_list):
     # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
 
 
-    mcmc = core.Class_MCMC.MCMC(f'K2-141b{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=6, nwalkers=64, nsteps=3000, burnin=1200)
-    params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
-    # calculate the model, upper and lower limits
-    dataX_2 = np.linspace(0, 2* np.pi, 300)
-    data_model = core.analytical_model.Fp2Fs(dataX_2, params=params, AA = AB_S)
-    # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
-    # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
-    # 绘制Specular模型的拟合曲线
-    ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$\chi^2$ = {mcmc.chi2:.3f}')
-    # 绘制95%置信区间
-    # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
+    # mcmc = core.Class_MCMC.MCMC(f'K2-141b{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=6, nwalkers=64, nsteps=3000, burnin=1200)
+    # params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
+    # # calculate the model, upper and lower limits
+    # dataX_2 = np.linspace(0, 2* np.pi, 300)
+    # data_model = core.analytical_model.Fp2Fs(dataX_2, params=params, AA = AB_S)
+    # # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
+    # # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
+    # # 绘制Specular模型的拟合曲线
+    # ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$\chi^2$ = {mcmc.chi2:.3f}')
+    # # 绘制95%置信区间
+    # # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
     
     
     # load Kepler data
@@ -70,7 +70,7 @@ ax.set_ylabel('Fp/Fs (ppm)')
 ax.legend(frameon=False)
 
 plt.savefig('./output/ABS_compare.pdf')
-# ax.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.1)  # 设置下限为-10，上限自动调整
+ax.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.1)  # 设置下限为-10，上限自动调整
 plt.savefig('./output/ABS_compare_nT.pdf')
 plt.show()
 plt.close()

@@ -26,6 +26,7 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
     time = Theta_array / (2 * np.pi) * P
     tm = RoadRunnerModel('quadratic')
     tm.set_data(time)
+    # tm.set_data(time, exptimes=P/15, nsamples=10)
     
     a_sc = 1/np.sin(alpha)   # a / Rs
     flux1 = tm.evaluate(k=Rp2Rs, ldc=[co1, co2], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
