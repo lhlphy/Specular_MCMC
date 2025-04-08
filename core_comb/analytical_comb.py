@@ -35,6 +35,7 @@ def Eclipse(Theta_array, Rp2Rs, inc, alpha = PPs.alpha):
     time = (Theta_array + np.pi) / (2 * np.pi) * P
     tm = RoadRunnerModel('uniform')
     tm.set_data(time)
+    # tm.set_data(time, exptimes=P/15, nsamples=10)
     
     a_sc = 1/np.sin(alpha)/Rp2Rs # a / Rp
     flux1 = tm.evaluate(k= 1/Rp2Rs, ldc=[0, 0], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
