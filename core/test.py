@@ -61,7 +61,7 @@ if __name__ == '__main__':
     Tss = PPs.Tss
     Rp2Rs = PPs.Rp2Rs
     inc = 90
-    Coefficents = PPs.Coefficents
+    Coefficents = [0, 0]
     print("Tss standard is: ", Tss)
     print("Rp/Rs standard is: ", Rp2Rs)
     

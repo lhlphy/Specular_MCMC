@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=9, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=7, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,8 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["A_diffuse", "A_specular", "alpha_ellip", "delta", "Tss", "Rp/Rs", "F", "inc", "alpha"]
-        self.Co1, self.Co2 = PPs.Coefficents
+        self.labels = ["A_diffuse", "alpha_ellip", "Tss", "F", "inc","u1", "u2"]
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
         folder = os.path.join('Target', target_name)
@@ -44,25 +43,17 @@ class MCMC:
 
     def log_likelihood(self, params):
         """对数似然函数"""
-        model = Fp2Fs(self.data_X, co1= self.Co1, co2= self.Co2, params=params)
+        model = Fp2Fs(self.data_X, params=params)
         return -0.5 * np.sum((self.data_Y - model) ** 2 / self.sigma**2 + np.log(2 * np.pi * self.sigma**2))
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB_D, AB_S, alpha_ellip, delta, Tss, Rp2Rs, F, inc, alpha = params
+        AB_D, alpha_ellip, Tss, F, inc, co1, co2 = params
         
         # AB_D: 均匀分布 [0, 0.7]
         if not (0 <= AB_D <= 0.7):
             return -np.inf
         log_prior_ABD = 0.0  # 均匀分布的对数概率为常数
-        
-        # AB_S: 均匀分布 [0, 0.3]
-        if not (0 <= AB_S <= 0.7):
-            return -np.inf
-        log_prior_ABS = 0.0  # 均匀分布的对数概率为常数
-        
-        if not (0 <= AB_D + AB_S < 1):  # 确保 AB_D + AB_S < 1
-            return -np.inf
         
         # alpha_ellip: 非负正态分布，mu=5, sigma=5
         if alpha_ellip < 0:
@@ -71,19 +62,11 @@ class MCMC:
         log_prior_alpha_ellip = -0.5 * ((alpha_ellip - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
         
-        # delta: 正态分布，mu=-5, sigma=3
-        mu, sigma = 0, 1.0
-        log_prior_delta = -0.5 * ((delta - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        
         # Tss: 正态分布，mu=Tss_ref, sigma=200
         mu, sigma = PPs.Tss*0.9, 150
-        if Tss > PPs.Tss *1.1:
+        if Tss > PPs.Tss *1.3:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        
-        # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
-        log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # F: 非负正态分布，mu=0, sigma=0.05
         if F < 0 or F > 0.5:
@@ -97,11 +80,13 @@ class MCMC:
         mu, sigma = 86.3, 3.1
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
-        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
-        log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
+        # u1, u2: 均匀分布 [0, 1]
+        if co1 < 0 or co1 > 1 or co2 < 0 or co2 > 1:
+            return -np.inf
+        log_prior_co1 = 0.0
+        log_prior_co2 = 0.0
 
-        return log_prior_ABD+ log_prior_ABS + log_prior_alpha_ellip + log_prior_delta + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
+        return log_prior_ABD + log_prior_alpha_ellip + log_prior_Tss + log_prior_F + log_prior_inc + log_prior_co1 + log_prior_co2
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -114,31 +99,24 @@ class MCMC:
         """运行 MCMC 采样并保存样本"""
         # initialize the walkers positions
         initial = np.zeros((self.nwalkers, self.ndim))
-        initial[:, 0] = np.random.uniform(0, 0.5, self.nwalkers)  # AB_D
-        initial[:, 1] = np.random.uniform(0, 0.5, self.nwalkers)  # AB_S
-        initial[:, 2] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
-        # delta
-        mu, sigma = 0, 1.0
-        initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 0] = np.random.uniform(0, 0.7, self.nwalkers)  # AB_D
+        initial[:, 1] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
         # Tss
         mu, sigma = PPs.Tss *0.9, 150
         a = (0 - mu) / sigma
-        b = (PPs.Tss * 1.1 - mu) / sigma
-        initial[:, 4] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
-        # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
-        initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        b = (PPs.Tss * 1.3 - mu) / sigma
+        initial[:, 2] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # F
         mu, sigma = 0, 0.03
-        initial[:, 6] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
+        initial[:, 3] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
         # inc
         mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
-        initial[:, 7] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
-        # alpha
-        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
-        initial[:, 8] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 4] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
+        # co1, co2
+        initial[:, 5] = np.random.uniform(0, 1, self.nwalkers)  # u1
+        initial[:, 6] = np.random.uniform(0, 1, self.nwalkers)  # u2
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
@@ -180,7 +158,7 @@ class MCMC:
         plt.figure(figsize=(10, 6))
         for ind in inds:
             sample = samples[ind]
-            model_pred = Fp2Fs(self.data_X, co1=self.Co1, co2=self.Co2, params=sample)
+            model_pred = Fp2Fs(self.data_X, params=sample)
             plt.plot(self.data_X / (2 * np.pi), model_pred, "C1", alpha=0.1)
         plt.errorbar(self.data_X / (2 * np.pi), self.data_Y, yerr=self.sigma, fmt=".k", capsize=0, label="Data")
         plt.xlabel("Phase (normalized)")
@@ -251,7 +229,7 @@ class MCMC:
         self.medians = medians
         
         # calculate chi2
-        model_pred = Fp2Fs(self.data_X, co1=self.Co1, co2=self.Co2, params=medians)
+        model_pred = Fp2Fs(self.data_X, params=medians)
         self.chi2 = self.chi2_cal(self.data_Y, model_pred, self.sigma)
         print("Chi2: ", self.chi2)
 
