@@ -21,6 +21,7 @@ Ms_S = PPs.Ms_S
 lam1 = 0.43e-6
 lam2 = 0.89e-6
 Tss_ref = PPs.Tss
+Co1, Co2 = PPs.Coefficents
 
 def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
     time = Theta_array / (2 * np.pi) * P
@@ -158,7 +159,7 @@ def F_Doppler(Theta_array, alpha_Doppler):
 
 from Sampling import supersample_decorator
 @supersample_decorator()
-def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=0, co2=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha = PPs.alpha, params = []):
+def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha = PPs.alpha, params = []):
     if len(params) != 0:
         AB, alpha_ellip, Tss, Rp2Rs, F, inc, alpha  = params
     if inc == 0:
