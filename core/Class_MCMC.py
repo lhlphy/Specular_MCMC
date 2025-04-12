@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["alpha_ellip", "Tss", "F", "inc", "u1", "u2"]
+        self.labels = [r"$\alpha_{\rm ellip}$", r"$T_{\rm sub}$", "F", "inc", "u1", "u2"]
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
         folder = os.path.join('Target', target_name)

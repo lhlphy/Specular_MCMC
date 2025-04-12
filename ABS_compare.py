@@ -12,15 +12,17 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # plot the data and model
+# 绘制不同的A_S值的拟合曲线
 fig, ax = plt.subplots(figsize=(8, 6))
-AB_S_list = [0.00, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+AB_S_list = [0.00, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
 # # generate color map
 from color import get_color
 color_map = get_color(n = len(AB_S_list))
 for i, AB_S in enumerate(AB_S_list):
+    # 绘制diffuse model 拟合曲线 (仅需绘制一次)
     if i == 0:
-        mcmc = core_comb.Class_MCMC.MCMC(f'K2-141b_comb{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=7, nwalkers=64, nsteps=3000, burnin=1200)
+        mcmc = core_comb.Class_MCMC.MCMC(f'MCMC_fixed/K2-141b_comb{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=7, nwalkers=64, nsteps=3000, burnin=1200)
         params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
         # calculate the model, upper and lower limits
         dataX_2 = np.linspace(0, 2* np.pi, 300)
@@ -28,12 +30,12 @@ for i, AB_S in enumerate(AB_S_list):
         # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
         # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
         # 绘制Specular模型的拟合曲线
-        ax.plot(dataX_2/(2 *np.pi), data_model, '-', color=color_map[i], linewidth=2, label=f'$A_S$ = {AB_S:.2f}, $\chi^2$ = {mcmc.chi2:.3f}')
+        ax.plot(dataX_2/(2 *np.pi), data_model, '-', color=color_map[i], linewidth=2, label=f'Diffuse, $\chi^2$ = {mcmc.chi2:.3f}')
         # # 绘制95%置信区间
         # # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
 
-
-    mcmc = core.Class_MCMC.MCMC(f'K2-141b{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=6, nwalkers=64, nsteps=3000, burnin=1200)
+    # 绘制specular model 拟合曲线 （对不同AS需要多次绘制）
+    mcmc = core.Class_MCMC.MCMC(f'MCMC_fixed/K2-141b{AB_S:.2f}', 'Kepler', sigma=7.5, ndim=6, nwalkers=64, nsteps=3000, burnin=1200)
     params, lower, upper = mcmc.estimate_parameters() # estimate the parameters and print them
     # calculate the model, upper and lower limits
     dataX_2 = np.linspace(0, 2* np.pi, 300)
@@ -41,7 +43,7 @@ for i, AB_S in enumerate(AB_S_list):
     # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
     # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
     # 绘制Specular模型的拟合曲线
-    ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$\chi^2$ = {mcmc.chi2:.3f}')
+    ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$A_S$ = {AB_S:.2f}, $\chi^2$ = {mcmc.chi2:.3f}')
     # 绘制95%置信区间
     # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
     
