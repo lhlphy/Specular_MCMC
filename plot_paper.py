@@ -14,6 +14,35 @@ import core_lambert
 import warnings
 warnings.filterwarnings("ignore")
 
+def int_transit(F, Theta_list, alpha = PPs.alpha):
+    mask = Theta_list < alpha/2/np.pi 
+    F = F[mask]
+    return np.mean(F)
+
+def detect_tr(F, Theta_list, alpha = PPs.alpha):
+    # 计算积分后的 F_tr
+    F_tr = int_transit(F, Theta_list)
+    # 计算阈值
+    threshold = 1 - 1.5 *alpha/2/np.pi  
+    # 筛选出满足条件的索引
+    mask = Theta_list < threshold
+    F_subset = F[mask]
+    Theta_subset = Theta_list[mask]
+    
+    # 找到最小值的索引
+    idx_min = np.argmin(F_subset)
+    F_min = F_subset[idx_min]
+    Theta_min = Theta_subset[idx_min]
+    
+    # # 计算最小值的积分值
+    # mask = (Theta_list > alpha/2/np.pi) & (Theta_list < 3 *alpha/2/np.pi)
+    # F_subset = F[mask]
+    # F_min = np.mean(F_subset)
+    
+    print(f"F_tr is {F_tr}, F_min is {F_min}.")
+    return F_tr - F_min
+    
+
 
 def compare_phase_curve_plot_transit(An_list, wave_range, instrument = '  ', legend = 'below', xlabel = 'on', ylabel = 'on', errorbar = 0):
     '''
@@ -39,7 +68,7 @@ def compare_phase_curve_plot_transit(An_list, wave_range, instrument = '  ', leg
     
     xloc = np.array([0.3948, 0.5, 0.6052])
     # Period: 7.72614 h
-    Theta_list = np.linspace(0, 2*np.pi, 200) / (2 * np.pi)
+    Theta_list = np.linspace(0, 2*np.pi, 500) / (2 * np.pi)
     Nt = np.size(Theta_list)
     data = np.zeros([np.size(Theta_list), 6])
     lam1, lam2 = wave_range
@@ -169,11 +198,16 @@ def compare_phase_curve_plot_transit(An_list, wave_range, instrument = '  ', leg
     plt.show()
     plt.close()
     
+    # 计算glint depth
+    glint = detect_tr(CR_S, Theta_list)
+    glint_sig = glint/errorbar
+    print(f'Glint depth: {glint:.2f}, detect as {glint_sig:.2f}')
+    
     
 if __name__ == '__main__':
     # mcmc = MCMC('K2-141b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
     
-    An_list = [0.05]
+    An_list = [0.1]
     compare_phase_curve_plot_transit(An_list, np.array([0.33, 1.1])* 1e-6, instrument = 'CHEOPS', legend = 'insert', xlabel = 'on', ylabel='on', errorbar=38.73)
     compare_phase_curve_plot_transit(An_list, np.array([0.80, 1.15])* 1e-6, instrument = 'HST/WFC3/G102', legend = 'off', xlabel='on', ylabel='on', errorbar=5.9287)
     # compare_phase_curve_plot_transit(An_list, np.array([1.075, 1.70])* 1e-6, instrument = 'HST/WFC3/G141', legend = 'off', xlabel = 'on', ylabel='on', errorbar=6.85)

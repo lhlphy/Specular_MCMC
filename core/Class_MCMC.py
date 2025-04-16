@@ -195,6 +195,11 @@ class MCMC:
             samples = self.load_samples()
         
         fig = corner.corner(samples, labels=self.labels)
+        # 调整所有子图的刻度字体和轴标签字体
+        for ax in fig.get_axes():
+            ax.tick_params(axis='both', labelsize=11.5)  # 调整刻度字体
+            ax.xaxis.label.set_size(17)  # 调整x轴标签字体
+            ax.yaxis.label.set_size(17)  # 调整y轴标签字体
         path = os.path.join('Target', self.target_name, f'{self.file_name}_corner.pdf')
         plt.savefig(path, format='pdf')
         plt.close()

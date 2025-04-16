@@ -27,7 +27,7 @@ for i, AB_S in enumerate(AB_S_list):
         # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
         # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
         # 绘制Specular模型的拟合曲线
-        ax.plot(dataX_2/(2 *np.pi), data_model, '-', color=color_map[i], linewidth=2, label=f'Diffuse, $\chi^2$ = {mcmc.chi2:.3f}')
+        ax.plot(dataX_2/(2 *np.pi), data_model, '-', color=color_map[i], linewidth=2, label=f'Diffuse, $\chi^2_{{\\nu}}$ = {mcmc.chi2:.3f}')
         # # 绘制95%置信区间
         # # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
 
@@ -40,7 +40,7 @@ for i, AB_S in enumerate(AB_S_list):
     # data_model_lower = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=lower, AA = AB_S)
     # data_model_upper = core_comb.analytical_comb.Fp2Fs(dataX_2, co1=Co1, co2=Co2, params=upper, AA = AB_S)
     # 绘制Specular模型的拟合曲线
-    ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$A_S$ = {AB_S:.2f}, $\chi^2$ = {mcmc.chi2:.3f}')
+    ax.plot(dataX_2/(2 *np.pi), data_model, '--', color=color_map[i], linewidth=2, label=f'$A_n$ = {AB_S:.2f}, $\chi^2_{{\\nu}}$ = {mcmc.chi2:.3f}')
     # 绘制95%置信区间
     # ax.fill_between(dataX_2/(2 *np.pi), data_model_lower, data_model_upper, alpha=0.3, color=color_map[i], edgecolor=None)
     
@@ -65,12 +65,15 @@ for i, AB_S in enumerate(AB_S_list):
 # ax.errorbar(dataX/(2 *np.pi), dataY, yerr=mcmc.sigma, fmt='o', color='k',markersize=3)
 
 # 绘图后处理
-ax.set_xlabel('Orbital phase')
-ax.set_ylabel('Fp/Fs (ppm)')
-ax.legend(frameon=False)
+ax.set_xlabel('Orbital phase', fontsize=14)
+ax.set_ylabel(f'$F_p/F_s$ (ppm)', fontsize=14)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+# ax.legend(frameon=False)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3)
 
-plt.savefig('./output/ABS_compare.pdf')
+plt.savefig('./output/ABS_compare.pdf', bbox_inches='tight')
 ax.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.1)  # 设置下限为-10，上限自动调整
-plt.savefig('./output/ABS_compare_nT.pdf')
+plt.savefig('./output/ABS_compare_nT.pdf', bbox_inches='tight')
 plt.show()
 plt.close()
