@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from parameters import PPs
 import os
 from Sampling import supersample_decorator
-from pytransit import RoadRunnerModel, QuadraticModel
+from pytransit import RoadRunnerModel
 
 # Constants List
 # Rs = PPs.Rs
@@ -27,7 +27,7 @@ Co1, Co2 = PPs.Coefficents
 def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
     time = Theta_array / (2 * np.pi) * P
     tm = RoadRunnerModel('quadratic')
-    tm.set_data(time)
+    tm.set_data(time, exptimes=29.4/60, nsamples=11)
     # tm.set_data(time, exptimes=P/72, nsamples=10)
     
     a_sc = 1/np.sin(alpha)   # a / Rs
@@ -37,7 +37,7 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
 def Eclipse(Theta_array, Rp2Rs, inc, alpha = PPs.alpha):
     time = (Theta_array + np.pi) / (2 * np.pi) * P
     tm = RoadRunnerModel('uniform')
-    tm.set_data(time)
+    tm.set_data(time, exptimes=29.4/60, nsamples=11)
     
     a_sc = 1/np.sin(alpha)/Rp2Rs # a / Rp
     flux1 = tm.evaluate(k= 1/Rp2Rs, ldc=[0, 0], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
@@ -146,6 +146,7 @@ def A_Fresnel(Theta = 0, A_normal = 0, I_angle = -1, inc = 90):
 #     results = np.array(results) *1e6
 #     return results
 
+@supersample_decorator()
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
@@ -202,6 +203,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, 
 #     SI[np.abs(Theta_array - np.pi) < alpha] = 0
 #     return SI
 
+@supersample_decorator()
 def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, inc = 90, alpha=PPs.alpha): 
     F = Rp2Rs**2 * np.sin(alpha/2)**2
     Theta_array = np.acos(np.cos(Theta_array) * np.sin(inc/180 *np.pi))
@@ -211,16 +213,16 @@ def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, inc = 90, alpha=PPs.alpha):
     # F[np.abs(Theta_array - np.pi) < alpha] = 0 # eclipse
     return F *1e6
 
-    
+@supersample_decorator()
 def F_ellip(Theta_array, alpha_ellip):
     A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *P**-2
     return A_ellip *(1 - np.cos(2* Theta_array - 2*np.pi)) 
 
+@supersample_decorator()
 def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-@supersample_decorator()
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha=PPs.alpha, params = [], AA =-1):
     if len(params) != 0:
         alpha_ellip, Tss, Rp2Rs, F, inc, alpha  = params

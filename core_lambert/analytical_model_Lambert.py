@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from parameters import PPs
 import os
 from pytransit import RoadRunnerModel
+from Sampling import supersample_decorator
 
 # Constants List
 # Rs = PPs.Rs
@@ -35,7 +36,7 @@ def F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha = PPs.alpha):
 def Eclipse(Theta_array, Rp2Rs, inc, alpha = PPs.alpha):
     time = (Theta_array + np.pi) / (2 * np.pi) * P
     tm = RoadRunnerModel('uniform')
-    tm.set_data(time)
+    tm.set_data(time, exptimes=29.4/60, nsamples=11)
     
     a_sc = 1/np.sin(alpha)/Rp2Rs # a / Rp
     flux1 = tm.evaluate(k= 1/Rp2Rs, ldc=[0, 0], t0=0.0, p=P, a=a_sc, i= inc/180 *np.pi, e=0.0, w=0.0)
@@ -82,6 +83,7 @@ def Response(lam):
     spl = interp1d(Response_data[:, 0], Response_data[:, 1], kind='linear')
     return spl(lam *1e6)
     
+@supersample_decorator()
 def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, lam1 = lam1, lam2 = lam2):
     # print('1')
     results = []
@@ -141,6 +143,7 @@ def F_thermal(Theta_array, AB, F=0, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, 
     results = np.array(results) *1e6
     return results
 
+@supersample_decorator()
 def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90, alpha=PPs.alpha):
     zt = np.acos(- np.sin(inc/180 *np.pi)* np.cos(Theta_array))
     Pt = AB * 2/3*(np.sin(zt) + (np.pi - zt) * np.cos(zt)) / np.pi
@@ -149,16 +152,16 @@ def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90, alpha=PPs.alpha):
     return Rp2Rs**2 *alpha**2 * Pt *1e6
 
     
+@supersample_decorator()
 def F_ellip(Theta_array, alpha_ellip):
     A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *P**-2
     return A_ellip *(1 - np.cos(2* Theta_array - 2*np.pi)) 
 
+@supersample_decorator()
 def F_Doppler(Theta_array, alpha_Doppler):
     A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
-from Sampling import supersample_decorator
-@supersample_decorator()
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha = PPs.alpha, params = []):
     if len(params) != 0:
         AB, alpha_ellip, Tss, Rp2Rs, F, inc, alpha  = params
