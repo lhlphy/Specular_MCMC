@@ -56,28 +56,25 @@ class MCMC:
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
         
-        # alpha_ellip: 非负正态分布，mu=5, sigma=5
-        if alpha_ellip < 0:
-            return -np.inf  # 确保非负
-        mu, sigma = 3.0, 1.0
-        log_prior_alpha_ellip = -0.5 * ((alpha_ellip - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        # 注意：这里未完全归一化截断正态分布，但对 MCMC 影响不大（仅影响常数项）
+        # alpha_ellip: 均匀分布，[0, 10]
+        if not (0 <= alpha_ellip <= 10):
+            return -np.inf
+        log_prior_alpha_ellip = 0.0
         
-        # Tss: 正态分布，mu=Tss_ref, sigma=200
-        mu, sigma = PPs.Tss*0.9, 150
-        if Tss > PPs.Tss *1.1:
+        # Tss: 正态分布
+        mu, sigma = PPs.Tss, 64.2*2
+        if Tss > PPs.Tss *1.2:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.1
-        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
+        # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.0423*PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # F: 非负正态分布，mu=0, sigma=0.05
-        if F < 0 or F > 0.5:
-            return -np.inf  # 确保非负
-        mu, sigma = 0, 0.03
-        log_prior_F = -0.5 * ((F - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
+        # F: 均匀分布，[0, 0.5]
+        if not (0 <= F <= 0.5):
+            return -np.inf
+        log_prior_F = 0.0
         
         # inc: inc<90的半正态分布，mu=90, sigma=5
         if inc < 75 or inc > 90:
@@ -85,8 +82,8 @@ class MCMC:
         mu, sigma = 86.3, 3.1
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # alpha: 正态分布，mu=PPs.alpha, sigma=0.02*PPs.alpha
-        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        # alpha: 正态分布，mu=PPs.alpha, sigma=0.0315*PPs.alpha
+        mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
 
         return  log_prior_alpha_ellip + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
@@ -104,25 +101,24 @@ class MCMC:
         initial = np.zeros((self.nwalkers, self.ndim))
         # AB
         initial[:, 0] = np.random.uniform(low=0.0, high=0.7, size=self.nwalkers)
-        initial[:, 1] = np.abs(np.random.normal(loc=3.0, scale=1.0, size = self.nwalkers))  # alpha_elips
+        initial[:, 1] = np.random.uniform(low=0.0, high=10.0, size=self.nwalkers)  # alpha_elips
         # Tss
-        mu, sigma = PPs.Tss *0.9, 150
+        mu, sigma = PPs.Tss, 64.2*2
         a = (0 - mu) / sigma
-        b = (PPs.Tss * 1.1 - mu) / sigma
+        b = (PPs.Tss * 1.2 - mu) / sigma
         initial[:, 2] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
-        mu, sigma = PPs.Rp2Rs, 0.02 * PPs.Rp2Rs
+        mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # F
-        mu, sigma = 0, 0.03
-        initial[:, 4] = np.abs(np.random.normal(loc=mu, scale=sigma, size=self.nwalkers))
+        initial[:, 4] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
         # inc
         mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
         initial[:, 5] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # alpha
-        mu, sigma = PPs.alpha, 0.02 * PPs.alpha
+        mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         initial[:, 6] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool

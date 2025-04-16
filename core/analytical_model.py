@@ -9,10 +9,6 @@ from Sampling import supersample_decorator
 from pytransit import RoadRunnerModel
 
 # Constants List
-# Rs = PPs.Rs
-# Rp = PPs.Rp
-# e = PPs.eccentricity
-# a = PPs.semi_axis
 Ts = PPs.Stellar_T
 P = PPs.Period
 Mp_J = PPs.Mp_J
