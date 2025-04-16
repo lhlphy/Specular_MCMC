@@ -8,7 +8,7 @@ from Class_MCMC import MCMC
 
 # 示例用法
 if __name__ == '__main__':
-    mcmc = MCMC('K2-141b_comb', 'Kepler', sigma=7.5, ndim=9, nwalkers=64, nsteps=3000, burnin=1200)
+    mcmc = MCMC('K2-141b_comb', 'Kepler', sigma=7.05, ndim=9, nwalkers=64, nsteps=3000, burnin=1200)
     mcmc.sample()       # 采样并保存
     mcmc.plot_trace()   # 绘制迹线图 优先绘制，依赖于chain的生成
     mcmc.plot_corner()  # 绘制角图
