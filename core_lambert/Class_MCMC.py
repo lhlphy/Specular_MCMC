@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = ["A", r"$\alpha_{\rm ellip}$", r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$"]
+        self.labels = [r'$A_{\lambda}$', r"$\alpha_{\rm ellip}$", r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径

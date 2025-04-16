@@ -13,8 +13,8 @@ if __name__ == '__main__':
     # mcmc.plot_trace()   # 绘制迹线图 优先绘制，依赖于chain的生成
     # mcmc.plot_corner()  # 绘制角图
     # mcmc.compute_rhat() # 计算 Gelman-Rubin 统计量
-    # mcmc.estimate_parameters()  # 估计参数值
-    mcmc.plot_fit()     # 绘制拟合图
+    mcmc.estimate_parameters()  # 估计参数值
+    # mcmc.plot_fit()     # 绘制拟合图
     
     # 加载样本并分析
     samples = mcmc.load_samples()
