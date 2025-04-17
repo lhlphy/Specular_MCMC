@@ -50,7 +50,7 @@ if __name__ == '__main__':
     t1 = time.time()
     print('test')
     # import MCMC class
-    mcmc = MCMC('Kepler-10b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
+    mcmc = MCMC('K2-141b', 'Kepler', sigma=2.5, ndim=7, nwalkers=64, nsteps=2000, burnin=1000)
     # set parameters
     Theta_array = np.linspace(0, 2*np.pi, 70)
     offset = 0

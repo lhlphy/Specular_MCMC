@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=7, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=6, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = [ r'$A_{\lambda}$', r"$\alpha_{\rm ellip}$", r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$"]
+        self.labels = [ r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
@@ -49,17 +49,12 @@ class MCMC:
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, alpha_ellip, Tss, Rp2Rs, F, inc, alpha = params
+        AB, Tss, Rp2Rs, F, inc, alpha = params
         
         # AB: 均匀分布 [0, 0.7]
         if not (0 <= AB <= 0.7):
             return -np.inf
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
-        
-        # alpha_ellip: 均匀分布，[0, 10]
-        if not (0 <= alpha_ellip <= 10):
-            return -np.inf
-        log_prior_alpha_ellip = 0.0
         
         # Tss: 正态分布
         mu, sigma = PPs.Tss, 64.2*2
@@ -86,7 +81,7 @@ class MCMC:
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
 
-        return  log_prior_alpha_ellip + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
+        return  log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -101,25 +96,24 @@ class MCMC:
         initial = np.zeros((self.nwalkers, self.ndim))
         # AB
         initial[:, 0] = np.random.uniform(low=0.0, high=0.7, size=self.nwalkers)
-        initial[:, 1] = np.random.uniform(low=0.0, high=10.0, size=self.nwalkers)  # alpha_elips
         # Tss
         mu, sigma = PPs.Tss, 64.2*2
         a = (0 - mu) / sigma
         b = (PPs.Tss * 1.2 - mu) / sigma
-        initial[:, 2] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 1] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
-        initial[:, 3] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
         # F
-        initial[:, 4] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
+        initial[:, 3] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
         # inc
         mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
         b = (90 - mu) / sigma
-        initial[:, 5] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 4] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
-        initial[:, 6] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
+        initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
