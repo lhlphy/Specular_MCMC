@@ -66,10 +66,15 @@ class MCMC:
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # F: 均匀分布，[0, 0.5]
-        if not (0 <= F <= 0.5):
+        # # F: 均匀分布，[0, 0.5]
+        # if not (0 <= F <= 0.5):
+        #     return -np.inf
+        # log_prior_F = 0.0
+        # F: 非负正态分布，mu=0.156, sigma=0.120
+        if F < 0 or F > 0.5:
             return -np.inf
-        log_prior_F = 0.0
+        mu, sigma = 0.156, 0.120
+        log_prior_F = -0.5 * ((F - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
         # inc: inc<90的半正态分布，mu=90, sigma=5
         if inc < 75 or inc > 90:
@@ -104,8 +109,13 @@ class MCMC:
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-        # F
-        initial[:, 3] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
+        # # F
+        # initial[:, 3] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
+        # F: 非负正态分布，mu=0.156, sigma=0.120
+        mu, sigma = 0.156, 0.120
+        a = (0 - mu) / sigma
+        b = (0.5 - mu) / sigma
+        initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # inc
         mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
