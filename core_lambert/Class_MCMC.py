@@ -210,6 +210,38 @@ class MCMC:
         path = os.path.join('Target', self.target_name, f'{self.file_name}_corner.pdf')
         plt.savefig(path, format='pdf')
         plt.close()
+            
+    def plot_A_lambda_distribution(self, samples=None):
+        """
+        仅绘制第一维(即 r'$A_{\lambda}$')的后验分布
+        """
+        if samples is None:
+            samples = self.load_samples()
+
+        # 只取第 0 维 (A_\lambda)
+        subset_samples = samples[:, [0]]
+
+        import corner
+        fig = corner.corner(subset_samples, labels=[self.labels[0]])
+
+        # corner.corner 返回的 axes，若只有一个参数，就只有 1 个轴
+        ax = fig.axes[0]
+        ax.set_ylabel("Density", fontsize=14)  # 为 y 轴添加标签
+
+        # 调整刻度与横轴标签大小
+        ax.tick_params(axis='both', labelsize=11.5)
+        ax.xaxis.label.set_size(17)
+        
+        # 手动设置 y 轴刻度与标签（此处以 5 个刻度为例）
+        y_min, y_max = ax.get_ylim()  # 获取当前 y 轴范围
+        yticks = np.linspace(y_min, y_max, 5)
+        ax.set_yticks(yticks)
+        ax.set_yticklabels([f"{(y/115200):.2f}" for y in yticks], fontsize=11.5) #获取的y轴刻度是频数，不是频率
+
+        # 保存为 PDF
+        path = os.path.join('Target', self.target_name, f'{self.file_name}_A_lambda_distribution.pdf')
+        plt.savefig(path, format='pdf', bbox_inches='tight')
+        plt.close()
         
     def compute_rhat(self):
         """独立计算 Gelman-Rubin 统计量以评估收敛性"""
