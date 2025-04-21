@@ -8,14 +8,14 @@ from Class_MCMC import MCMC
 
 # 示例用法
 if __name__ == '__main__':
-    mcmc = MCMC('K2-141b_lambert', 'Kepler', sigma=7.05, ndim=6, nwalkers=64, nsteps=3000, burnin=1200)
-    # mcmc.sample()       # 采样并保存
-    # mcmc.plot_trace()   # 绘制迹线图 优先绘制，依赖于chain的生成
-    # mcmc.plot_corner()  # 绘制角图
-    mcmc.plot_A_lambda_distribution() # 绘制 A_lambda 分布图
-    # mcmc.compute_rhat() # 计算 Gelman-Rubin 统计量
-    # mcmc.estimate_parameters()  # 估计参数值
-    # mcmc.plot_fit()     # 绘制拟合图
+    mcmc = MCMC('K2-141b_lambert', 'Kepler', sigma=7.05, ndim=7, nwalkers=64, nsteps=3000, burnin=1500)
+    mcmc.sample()       # 采样并保存
+    mcmc.plot_trace()   # 绘制迹线图 优先绘制，依赖于chain的生成
+    mcmc.plot_corner()  # 绘制角图
+    # mcmc.plot_A_lambda_distribution() # 绘制 A_lambda 分布图
+    mcmc.compute_rhat() # 计算 Gelman-Rubin 统计量
+    mcmc.estimate_parameters()  # 估计参数值
+    mcmc.plot_fit()     # 绘制拟合图
     
     # 加载样本并分析
     samples = mcmc.load_samples()

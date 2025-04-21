@@ -162,11 +162,11 @@ def F_Doppler(Theta_array, alpha_Doppler):
 
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha = PPs.alpha, params = []):
     if len(params) != 0:
-        AB, Tss, Rp2Rs, F, inc, alpha  = params
+        AB, Tss, Rp2Rs, F, inc, alpha, alpha_ellip  = params
     if inc == 0:
         print('Warning: inc is 0, set to 90.')
         inc = 90
-    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha)  + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
+    return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha)  + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha) + F_ellip(Theta_array, alpha_ellip) 
 
 # if __name__ == '__main__':
 #     F_Doppler(0,1)

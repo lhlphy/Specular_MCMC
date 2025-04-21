@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = [r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$"]
+        self.labels = [r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$", r"$\alpha_{\rm ellip}$"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
@@ -49,7 +49,7 @@ class MCMC:
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, Tss, Rp2Rs, F, inc, alpha = params
+        AB, Tss, Rp2Rs, F, inc, alpha, alpha_ellip = params
         
         # AB: 均匀分布 [0, 0.7]
         if not (0 <= AB <= 0.7):
@@ -86,7 +86,12 @@ class MCMC:
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        return log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha
+        # alpha_ellip: 均匀分布 [0, 10]
+        if not (0 <= alpha_ellip <= 10):
+            return -np.inf
+        log_prior_alpha_ellip = 0.0
+        
+        return log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha+ log_prior_alpha_ellip
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -124,7 +129,8 @@ class MCMC:
         # alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-
+        # alpha_ellip
+        initial[:, 6] = np.random.uniform(low=0.0, high=10.0, size=self.nwalkers)
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
