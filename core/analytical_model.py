@@ -211,12 +211,12 @@ def F_specular(Theta_array, An, Rp2Rs=PPs.Rp2Rs, inc = 90, alpha=PPs.alpha):
 
 @supersample_decorator()
 def F_ellip(Theta_array, alpha_ellip):
-    A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *P**-2
+    A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *(P/24)**-2
     return A_ellip *(1 - np.cos(2* Theta_array - 2*np.pi)) 
 
 @supersample_decorator()
 def F_Doppler(Theta_array, alpha_Doppler):
-    A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
+    A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *(P/24)**(-1/3)
     return A_Doppler *np.sin(Theta_array)
 
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha=PPs.alpha, params = [], AA =-1):

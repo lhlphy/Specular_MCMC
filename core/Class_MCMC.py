@@ -252,5 +252,5 @@ class MCMC:
         upper_errors = upper - medians
 
         for i in range(self.ndim):
-            print(f"{self.labels[i]}: {medians[i]:.4f} -{lower_errors[i]:.4f} / +{upper_errors[i]:.4f}")
+            print(f"{self.labels[i]}: {medians[i]:.5f} -{lower_errors[i]:.5f} / +{upper_errors[i]:.5f}")
         return medians, lower, upper

@@ -150,12 +150,14 @@ def F_lambert(Theta_array, AB, Rp2Rs=PPs.Rp2Rs, inc=90, alpha=PPs.alpha):
     
 @supersample_decorator()
 def F_ellip(Theta_array, alpha_ellip):
-    A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *P**-2
+    A_ellip = alpha_ellip /0.077 *Mp_J* Rs_S**3 *Ms_S**-2 *(P/24)**-2
+    print('A_ellip:', A_ellip)
     return A_ellip *(1 - np.cos(2* Theta_array - 2*np.pi)) 
 
 @supersample_decorator()
 def F_Doppler(Theta_array, alpha_Doppler):
-    A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *P**(-1/3)
+    A_Doppler = alpha_Doppler/0.37 *Mp_J *Ms_S**(-2/3) *(P/24)**(-1/3)
+    print('A_Doppler:', A_Doppler)
     return A_Doppler *np.sin(Theta_array)
 
 def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref, Rp2Rs = PPs.Rp2Rs, inc = 90, alpha = PPs.alpha, params = []):
@@ -165,3 +167,7 @@ def Fp2Fs(Theta_array, AB=0, F=0, alpha_ellip=0, co1=Co1, co2=Co2, Tss = Tss_ref
         print('Warning: inc is 0, set to 90.')
         inc = 90
     return (F_thermal(Theta_array, AB, F, Tss, Rp2Rs, inc) + F_lambert(Theta_array, AB, Rp2Rs, inc, alpha)) *Eclipse(Theta_array, Rp2Rs, inc, alpha)  + F_Transit(Theta_array, Rp2Rs, co1, co2, inc, alpha)
+
+# if __name__ == '__main__':
+#     F_Doppler(0,1)
+#     F_ellip(0,1)

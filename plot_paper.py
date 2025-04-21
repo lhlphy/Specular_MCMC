@@ -180,7 +180,7 @@ if __name__ == '__main__':
     # compare_phase_curve_plot_transit(An_list, np.array([2.7, 4.0])* 1e-6, instrument = 'JWST/NIRCam/F322W2', legend = 'off', xlabel = 'on', ylabel='off', errorbar=5.14)
     # compare_phase_curve_plot_transit(An_list, np.array([1.5, 2])* 1e-6, instrument = 'JWST/NIRISS/F150W', legend = 'off', xlabel = 'on', ylabel='on', errorbar=288.1/np.sqrt(0.97*3600))
     
-    # compare_phase_curve_plot_transit(An_list, np.array([0.70, 1.27])* 1e-6, instrument = 'JWST/NIRSpec\nG140M/F070LP', legend = 'off', xlabel = 'on', ylabel='on', errorbar=2.985)
+    compare_phase_curve_plot_transit(An_list, np.array([0.70, 1.27])* 1e-6, instrument = 'JWST/NIRSpec\nG140M/F070LP', legend = 'off', xlabel = 'on', ylabel='on', errorbar=2.985)
     # compare_phase_curve_plot_transit(An_list, np.array([1.66, 3.07])* 1e-6, instrument = 'JWST/NIRSpec\nG235M/F170LP', legend = 'off', xlabel='on', ylabel='on', errorbar=7.40)
     # compare_phase_curve_plot_transit(An_list, np.array([2.87, 5.10])* 1e-6, instrument = 'JWST/NIRSpec\nG395M/F290LP', legend = 'off', xlabel = 'on', ylabel='on', errorbar=6.85)
     compare_phase_curve_plot_transit(An_list, np.array([0.6, 1.9])* 1e-6, instrument = 'JWST/NIRSpec\nPRISM', legend = 'off', xlabel = 'on', ylabel='on', errorbar=1.6087)

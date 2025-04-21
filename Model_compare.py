@@ -54,25 +54,64 @@ data_model_upper = core.analytical_model.Fp2Fs(dataX, co1=Co1, co2=Co2, params=u
 data_model_l_lower = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, co1=Co1_l, co2=Co2_l, params=lower_l)
 data_model_l_upper = core_lambert.analytical_model_Lambert.Fp2Fs(dataX, co1=Co1_l, co2=Co2_l, params=upper_l)
 
-# plot the data and model
-fig, ax = plt.subplots(figsize=(8, 6))
-ax.errorbar(dataX/(2*np.pi), dataY, yerr=mcmc.sigma, fmt='o', color='k', markersize=3)
-# 绘制Specular和Lambert模型的拟合曲线
-ax.plot(dataX/(2*np.pi), data_model, '-', color='red', linewidth=2.5, label=f'Specular: $\chi^2$={chi2_value:.2f}')
-ax.plot(dataX/(2*np.pi), data_model_l, '-', color='blue', linewidth=2.5, label=f'Diffuse: $\chi^2$={chi2_value_lambert:.2f}')
-# 绘制95%置信区间
-# ax.fill_between(dataX, data_model_lower, data_model_upper,
-#                 alpha=0.5, color='red', label='Specular Model 95% CI')
-# ax.fill_between(dataX, data_model_l_lower, data_model_l_upper,
-#                 alpha=0.5, color='blue', label='Diffuse Model 95% CI')
-ax.set_xlabel('Orbital phase', fontsize=15)
-ax.set_ylabel('Fp/Fs (ppm)', fontsize=15)
-ax.tick_params(axis='both', labelsize=12)
-ax.legend(fontsize=13, frameon=False)
+import matplotlib.gridspec as gridspec
+
+# Create figure with GridSpec for two subplots
+fig = plt.figure(figsize=(8, 8))
+gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1], hspace=0.05)  # Adjust height ratio and spacing
+# Top subplot: Main data and model
+ax1 = fig.add_subplot(gs[0])
+ax1.errorbar(dataX/(2*np.pi), dataY, yerr=mcmc.sigma, fmt='o', color='k', markersize=3)
+# Plot Specular and Lambert model fits
+ax1.plot(dataX/(2*np.pi), data_model, '-', color='red', linewidth=2.5, label=f'Specular: $\chi^2$={chi2_value:.2f}')
+ax1.plot(dataX/(2*np.pi), data_model_l, '-', color='blue', linewidth=2.5, label=f'Diffuse: $\chi^2$={chi2_value_lambert:.2f}')
+ax1.set_ylabel('Fp/Fs (ppm)', fontsize=15)
+ax1.tick_params(axis='both', labelsize=12)
+ax1.legend(fontsize=13, frameon=False)
+ax1.set_ylim(-20, (np.max(dataY) + mcmc.sigma) * 1.15)
+ax1.set_xlim(0, 1)
+# Remove x-axis ticks for the top plot
+ax1.set_xticklabels([])
+
+# Bottom subplot: Residual plot
+ax2 = fig.add_subplot(gs[1], sharex=ax1)
+# Calculate residuals
+residuals_specular = dataY - data_model
+residuals_lambert = dataY - data_model_l
+# Plot residuals
+ax2.errorbar(dataX/(2*np.pi), residuals_specular, yerr=mcmc.sigma, fmt='o', color='red', markersize=3, label='Specular Residuals')
+ax2.errorbar(dataX/(2*np.pi), residuals_lambert, yerr=mcmc.sigma, fmt='o', color='blue', markersize=3, label='Diffuse Residuals', alpha=0.5) 
+# ax2.plot(dataX/(2*np.pi), residuals_specular, '-', color='red', linewidth=1.5, label='Specular Residuals')
+# ax2.plot(dataX/(2*np.pi), residuals_lambert, '-', color='blue', linewidth=1.5, label='Diffuse Residuals')
+# Add horizontal line at y=0
+ax2.axhline(0, color='black', linestyle='--', linewidth=1)
+ax2.set_xlabel('Orbital phase', fontsize=15)
+ax2.set_ylabel('Residuals (ppm)', fontsize=15)
+ax2.tick_params(axis='both', labelsize=12)
+# Set y-limits for residuals (symmetric around 0, based on max residual)
+max_residual = max(np.max(np.abs(residuals_specular)), np.max(np.abs(residuals_lambert)))
+ax2.set_ylim(-max_residual * 1.2, max_residual * 1.2)
+ax1.set_xlim(0, 1)
+
+# # plot the data and model
+# fig, ax = plt.subplots(figsize=(8, 6))
+# ax.errorbar(dataX/(2*np.pi), dataY, yerr=mcmc.sigma, fmt='o', color='k', markersize=3)
+# # 绘制Specular和Lambert模型的拟合曲线
+# ax.plot(dataX/(2*np.pi), data_model, '-', color='red', linewidth=2.5, label=f'Specular: $\chi^2$={chi2_value:.2f}')
+# ax.plot(dataX/(2*np.pi), data_model_l, '-', color='blue', linewidth=2.5, label=f'Diffuse: $\chi^2$={chi2_value_lambert:.2f}')
+# # 绘制95%置信区间
+# # ax.fill_between(dataX, data_model_lower, data_model_upper,
+# #                 alpha=0.5, color='red', label='Specular Model 95% CI')
+# # ax.fill_between(dataX, data_model_l_lower, data_model_l_upper,
+# #                 alpha=0.5, color='blue', label='Diffuse Model 95% CI')
+# ax.set_xlabel('Orbital phase', fontsize=15)
+# ax.set_ylabel('Fp/Fs (ppm)', fontsize=15)
+# ax.tick_params(axis='both', labelsize=12)
+# ax.legend(fontsize=13, frameon=False)
 
 plt.savefig('./output/Kepler_specular_vs_lambert.pdf')
-ax.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.15)  # 设置下限为-10，上限自动调整
-ax.set_xlim(0, 1)
+ax1.set_ylim(-20, (np.max(dataY)+mcmc.sigma) *1.15)  # 设置下限为-10，上限自动调整
+ax1.set_xlim(0, 1)
 plt.savefig('./output/Kepler_specular_vs_lambert_nT.pdf')
 plt.show()
 plt.close()
