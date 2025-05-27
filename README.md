@@ -1,4 +1,4 @@
-# Markov Chain Monte Carlo (MCMC) Analysis of Phase Curve Models and Observational Data for Exoplanets
+## Markov Chain Monte Carlo (MCMC) Analysis of Phase Curve Models and Observational Data for Exoplanets
 
 ### Inputs
 - **Phase curve model:** Spectral model: `./core`; Lambert model: `./core_lambert`
