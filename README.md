@@ -1,4 +1,5 @@
 ## Markov Chain Monte Carlo (MCMC) Analysis of Phase Curve Models and Observational Data for Exoplanets
+ Predefine Lambert sacttering, specular reflection and atmospheric scattering models.
 
 ### Inputs
 - **Phase curve model:** Spectral model: `./core`; Lambert model: `./core_lambert`
