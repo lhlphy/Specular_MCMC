@@ -5,8 +5,9 @@ When change the observation target, do the following checklist:
 4. (main.py -- Line) Change the name of target and file (file name is just the name of telescope)
 	for ./core/, "Kepler-10b"
 	for ./core_lambert/, "Kepler-10b_lambert"
+	for ./core_atm/, "K2-141b_atm" and ndim=8
 	for ./core_comb/, "Kepler-10b_comb"
 5. (main.py -- Line) Change the sigma (errorbar)
-6. Remember to do (2,3,4,5) steps for both ./core/ and ./core_lambert/ folders
+6. Remember to do (2,3,4,5) steps for ./core/, ./core_lambert/, and ./core_atm/ folders
 
  python3 -m pip install siphash24

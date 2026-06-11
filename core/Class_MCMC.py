@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=6, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=7, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = [ r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$", r"$\alpha_{\rm ellip}$"]
+        self.labels = [r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$", "delta"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
@@ -44,12 +44,12 @@ class MCMC:
 
     def log_likelihood(self, params):
         """对数似然函数"""
-        model = Fp2Fs(self.data_X, co1= self.Co1, co2= self.Co2, params=params)
+        model = Fp2Fs(self.data_X, co1=self.Co1, co2=self.Co2, params=params)
         return -0.5 * np.sum((self.data_Y - model) ** 2 / self.sigma**2 + np.log(2 * np.pi * self.sigma**2))
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, Tss, Rp2Rs, F, inc, alpha, alpha_ellip = params
+        AB, Tss, Rp2Rs, F, inc, alpha, delta = params
         
         # AB: 均匀分布 [0, 0.7]
         if not (0 <= AB <= 0.7):
@@ -62,7 +62,7 @@ class MCMC:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.0423*PPs.Rp2Rs
+        # Rp2Rs: 正态分布，mu=PPs.Rp2Rs, sigma=0.02258*PPs.Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         log_prior_Rp2Rs = -0.5 * ((Rp2Rs - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
@@ -70,7 +70,6 @@ class MCMC:
         # if not (0 <= F <= 0.5):
         #     return -np.inf
         # log_prior_F = 0.0
-        
         # F: 非负正态分布，mu=0.156, sigma=0.120
         if F < 0 or F > 0.5:
             return -np.inf
@@ -83,16 +82,16 @@ class MCMC:
         mu, sigma = 86.3, 3.1
         log_prior_inc = -0.5 * ((inc - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
-        # alpha: 正态分布，mu=PPs.alpha, sigma=0.0315*PPs.alpha
+        # alpha: 正态分布，mu=PPs.alpha, sigma=0.02636*PPs.alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        
-        # alpha_ellip: 均匀分布 [0, 10]
-        if not (0 <= alpha_ellip <= 10):
-            return -np.inf
-        log_prior_alpha_ellip = 0.0
 
-        return  log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha + log_prior_alpha_ellip
+        # delta: 均匀分布，[-10, 10]
+        if not (-10 <= delta <= 10):
+            return -np.inf
+        log_prior_delta = 0.0
+        
+        return log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha + log_prior_delta
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -115,14 +114,13 @@ class MCMC:
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
         initial[:, 2] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-        # F
+        # # F
         # initial[:, 3] = np.random.uniform(low=0.0, high=0.5, size=self.nwalkers)
         # F: 非负正态分布，mu=0.156, sigma=0.120
         mu, sigma = 0.156, 0.120
         a = (0 - mu) / sigma
         b = (0.5 - mu) / sigma
         initial[:, 3] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
-
         # inc
         mu, sigma = 86.3, 3.1
         a = (75 - mu) / sigma
@@ -131,8 +129,9 @@ class MCMC:
         # alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-        # alpha_ellip
-        initial[:, 6] = np.random.uniform(low=0.0, high=10.0, size=self.nwalkers)
+        # delta
+        initial[:, 6] = np.random.uniform(low=-10, high=10, size=self.nwalkers)
+
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
@@ -161,7 +160,7 @@ class MCMC:
         """加载保存的 MCMC 样本"""
         path = os.path.join('Target', self.target_name, f'{self.file_name}_mcmc_samples.npy')
         return np.load(path)
-    
+
     def chi2_cal(self, dataY, data_Model, errorbar):
         return np.sum(((dataY - data_Model) / errorbar)**2) / len(dataY)
     
@@ -187,7 +186,6 @@ class MCMC:
         path = os.path.join('Target', self.target_name, f'{self.file_name}_model_fit2.pdf')
         plt.savefig(path, format='pdf')
         plt.close()
-        
     
     def plot_trace(self):
         """绘制迹线图以检查收敛性"""
@@ -259,5 +257,5 @@ class MCMC:
         upper_errors = upper - medians
 
         for i in range(self.ndim):
-            print(f"{self.labels[i]}: {medians[i]:.5f} -{lower_errors[i]:.5f} / +{upper_errors[i]:.5f}")
+            print(f"{self.labels[i]}: {medians[i]:.4f} -{lower_errors[i]:.4f} / +{upper_errors[i]:.4f}")
         return medians, lower, upper

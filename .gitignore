@@ -1,3 +1,13 @@
 MCMC/
 __pycache__/
 target/
+Target/
+output/
+temp/
+temp_K2-141b/
+codex_remote_original/
+codex_remote_update/
+codex_remote_verify/
+log/
+.pytest_cache/
+.ipynb_checkpoints/

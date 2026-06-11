@@ -11,7 +11,7 @@ from scipy.stats import truncnorm
 from parameters import PPs
 
 class MCMC:
-    def __init__(self, target_name, file_name,  sigma=10, ndim=6, nwalkers=120, nsteps=2000, burnin=1000):
+    def __init__(self, target_name, file_name,  sigma=10, ndim=7, nwalkers=120, nsteps=2000, burnin=1000):
         """
         初始化 MCMC 类。
         
@@ -29,7 +29,7 @@ class MCMC:
         self.nwalkers = nwalkers
         self.nsteps = nsteps
         self.burnin = burnin
-        self.labels = [r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$", r"$\alpha_{\rm ellip}$"]
+        self.labels = [r'$A_{\lambda}$', r"$T_{\rm sub}$", "Rp/Rs", "F", "inc", r"$\alpha$", "delta"]
         self.Co1, self.Co2 = PPs.Coefficents
         
         # 加载数据, 使用 os.path.join 构建跨平台的文件路径
@@ -49,7 +49,7 @@ class MCMC:
     
     def log_prior(self, params):
         """对数先验函数"""
-        AB, Tss, Rp2Rs, F, inc, alpha, alpha_ellip = params
+        AB, Tss, Rp2Rs, F, inc, alpha, delta = params
         
         # AB: 均匀分布 [0, 0.7]
         if not (0 <= AB <= 0.7):
@@ -57,8 +57,8 @@ class MCMC:
         log_prior_AB = 0.0  # 均匀分布的对数概率为常数
         
         # Tss: 正态分布
-        mu, sigma = PPs.Tss *0.91469, 64.2*2
-        if Tss > PPs.Tss *1.1:
+        mu, sigma = PPs.Tss, 64.2*2
+        if Tss > PPs.Tss *1.2:
             return -np.inf
         log_prior_Tss = -0.5 * ((Tss - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
         
@@ -85,13 +85,13 @@ class MCMC:
         # alpha: 正态分布，mu=PPs.alpha, sigma=0.02636*PPs.alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         log_prior_alpha = -0.5 * ((alpha - mu) / sigma) ** 2 - np.log(sigma * np.sqrt(2 * np.pi))
-        
-        # alpha_ellip: 均匀分布 [0, 10]
-        if not (0 <= alpha_ellip <= 10):
+
+        # delta: 均匀分布，[-10, 10]
+        if not (-10 <= delta <= 10):
             return -np.inf
-        log_prior_alpha_ellip = 0.0
+        log_prior_delta = 0.0
         
-        return log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha+ log_prior_alpha_ellip
+        return log_prior_AB + log_prior_Tss + log_prior_Rp2Rs + log_prior_F + log_prior_inc + log_prior_alpha + log_prior_delta
     
     def log_posterior(self, params):
         """对数后验函数"""
@@ -107,9 +107,9 @@ class MCMC:
         # AB
         initial[:, 0] = np.random.uniform(low=0.0, high=0.7, size=self.nwalkers)
         # Tss
-        mu, sigma = PPs.Tss *0.91469, 64.2*2
+        mu, sigma = PPs.Tss, 64.2*2
         a = (0 - mu) / sigma
-        b = (PPs.Tss * 1.1 - mu) / sigma
+        b = (PPs.Tss * 1.2 - mu) / sigma
         initial[:, 1] = truncnorm.rvs(a, b, loc=mu, scale=sigma, size=self.nwalkers)
         # Rp2Rs
         mu, sigma = PPs.Rp2Rs, 0.02258 * PPs.Rp2Rs
@@ -129,8 +129,9 @@ class MCMC:
         # alpha
         mu, sigma = PPs.alpha, 0.02636 * PPs.alpha
         initial[:, 5] = np.random.normal(loc=mu, scale=sigma, size=self.nwalkers)
-        # alpha_ellip
-        initial[:, 6] = np.random.uniform(low=0.0, high=10.0, size=self.nwalkers)
+        # delta
+        initial[:, 6] = np.random.uniform(low=-10, high=10, size=self.nwalkers)
+
 
         # Create the EnsembleSampler object using a multiprocessing pool
         with Pool() as pool:  # multiprocessing 多进程池
@@ -216,38 +217,6 @@ class MCMC:
         path = os.path.join('Target', self.target_name, f'{self.file_name}_corner.pdf')
         plt.savefig(path, format='pdf')
         plt.close()
-            
-    def plot_A_lambda_distribution(self, samples=None):
-        """
-        仅绘制第一维(即 r'$A_{\lambda}$')的后验分布
-        """
-        if samples is None:
-            samples = self.load_samples()
-
-        # 只取第 0 维 (A_\lambda)
-        subset_samples = samples[:, [0]]
-
-        import corner
-        fig = corner.corner(subset_samples, labels=[self.labels[0]])
-
-        # corner.corner 返回的 axes，若只有一个参数，就只有 1 个轴
-        ax = fig.axes[0]
-        ax.set_ylabel("Density", fontsize=14)  # 为 y 轴添加标签
-
-        # 调整刻度与横轴标签大小
-        ax.tick_params(axis='both', labelsize=11.5)
-        ax.xaxis.label.set_size(17)
-        
-        # 手动设置 y 轴刻度与标签（此处以 5 个刻度为例）
-        y_min, y_max = ax.get_ylim()  # 获取当前 y 轴范围
-        yticks = np.linspace(y_min, y_max, 5)
-        ax.set_yticks(yticks)
-        ax.set_yticklabels([f"{(y/115200):.2f}" for y in yticks], fontsize=11.5) #获取的y轴刻度是频数，不是频率
-
-        # 保存为 PDF
-        path = os.path.join('Target', self.target_name, f'{self.file_name}_A_lambda_distribution.pdf')
-        plt.savefig(path, format='pdf', bbox_inches='tight')
-        plt.close()
         
     def compute_rhat(self):
         """独立计算 Gelman-Rubin 统计量以评估收敛性"""
@@ -288,5 +257,5 @@ class MCMC:
         upper_errors = upper - medians
 
         for i in range(self.ndim):
-            print(f"{self.labels[i]}: {medians[i]:.5f} -{lower_errors[i]:.5f} / +{upper_errors[i]:.5f}")
+            print(f"{self.labels[i]}: {medians[i]:.4f} -{lower_errors[i]:.4f} / +{upper_errors[i]:.4f}")
         return medians, lower, upper

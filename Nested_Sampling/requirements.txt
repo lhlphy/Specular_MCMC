@@ -1,0 +1,8 @@
+dynesty>=2.1
+numpy
+scipy
+matplotlib
+corner
+pytransit
+pandas
+
