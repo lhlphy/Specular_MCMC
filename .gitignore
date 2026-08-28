@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment and editor files
+.venv/
+venv/
+.env
+.vscode/
+.idea/
+
+# Generated MCMC arrays
+Target/**/*.npy
