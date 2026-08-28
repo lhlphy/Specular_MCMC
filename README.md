@@ -4,9 +4,9 @@ Predefine Lambert sacttering, specular reflection and atmospheric scattering mod
 
 ### Inputs
 
-- **Phase curve model:** Spectral model: `./core`; Lambert model: `./core_lambert`
+- **Phase curve model:** Spectral model: `./core_limb`; Lambert model: `./core_lambert_limb`; Atmospheric model: `./core_atm_limb`
 - **Observation target:** Defined in: `parameters.py`, `Sampling.py`
-- **Observation data:** Kepler data for the target&#x20;
+- **Observation data:** Kepler data for the target
 - **Prior distribution of parameters**
 
 ### Attention
@@ -16,3 +16,8 @@ Predefine Lambert sacttering, specular reflection and atmospheric scattering mod
 ### Outputs
 
 - **Posterior distribution of parameters**
+
+### Run
+- run_specular.sh : Runs the MCMC analysis for the specular-reflection model.
+- run_diffuse.sh : Runs the MCMC analysis for the diffuse-reflection model.
+- run_atmosphere.sh : Runs the MCMC analysis for the atmospheric model.
