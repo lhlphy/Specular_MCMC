@@ -11,3 +11,4 @@ venv/
 
 # Generated MCMC arrays
 Target/**/*.npy
+Target/**/*.pdf
